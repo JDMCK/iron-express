@@ -3,36 +3,41 @@ package gfx
 import (
 	"image"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Atlas struct {
-	FrameCount int
-
-	rows int
-	cols int
-	img  *ebiten.Image
+	img         *eb.Image
+	frameWidth  int
+	frameHeight int
 }
 
-func (a *Atlas) GetFrame(frame int) image.Image {
-	boundedFrame := frame % a.FrameCount
-	frameWidth, frameHeight := a.GetFrameDims()
-	frameX := boundedFrame % a.cols * frameWidth
-	frameY := boundedFrame / a.cols * frameHeight
-	frameRect := image.Rect(frameX, frameY, frameX+frameWidth, frameY+frameHeight)
+func (a *Atlas) GetFrame(row, col int) image.Image {
+	totalRows, totalCols := a.getDims()
+	boundedRow := row % totalRows
+	boundedCol := col % totalCols
+	frameX := boundedCol * a.frameWidth
+	frameY := boundedRow * a.frameHeight
+	frameRect := image.Rect(frameX, frameY, frameX+a.frameWidth, frameY+a.frameHeight)
 	return a.img.SubImage(frameRect)
+
 }
 
-func (a *Atlas) GetFrameDims() (width, height int) {
-	pt := a.img.Bounds().Size()
-	return pt.X / a.cols, pt.Y / a.rows
+// returns amount of rows and cols of frames in this atlas
+func (a *Atlas) getDims() (rows, cols int) {
+	width, height := a.getPixelDims()
+	return height / a.frameHeight, width / a.frameWidth
 }
 
-func NewAtlas(img *ebiten.Image, frameCount int, cols int) Atlas {
-	return Atlas{
-		img:        img,
-		FrameCount: frameCount,
-		cols:       cols,
-		rows:       frameCount / cols,
+func (a *Atlas) getPixelDims() (width, height int) {
+	point := a.img.Bounds().Size()
+	return point.X, point.Y
+}
+
+func NewAtlas(img *eb.Image, frameWidth, frameHeight int) *Atlas {
+	return &Atlas{
+		img:         img,
+		frameWidth:  frameWidth,
+		frameHeight: frameHeight,
 	}
 }

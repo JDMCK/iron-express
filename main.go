@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image/color"
+	"iron-express/config"
 	"iron-express/gfx"
 	"log"
 
@@ -9,39 +11,46 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-var explosion gfx.Clip
+var animations gfx.AnimationMap
+var animIndex int = 0
+var currentAnim *gfx.Animation
+var name string
 
 func init() {
-	var err error
-	img, _, err := ebitenutil.NewImageFromFile("assets/animations/explosion.png")
+	anims, err := config.LoadAnimationAtlas("player")
 	if err != nil {
 		log.Fatal(err)
 	}
-	atlas := gfx.NewAtlas(img, 14, 14)
-	explosion = gfx.NewClip(atlas, 10, true)
+	animations = anims
+	currentAnim = animations["idle"]
 }
 
 type Game struct{}
 
 func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(eb.KeySpace) {
-		explosion.TogglePause()
+		animIndex = (animIndex + 1) % 4
 	}
+	names := []string{"run", "idle", "fall", "jump"}
+	name = names[animIndex]
+	currentAnim = animations[name]
 
 	return nil
 }
 
 func (g *Game) Draw(screen *eb.Image) {
-	explosion.DrawAndUpdate(screen, 100, 100)
+	screen.Fill(color.RGBA{0, 100, 200, 0})
+	ebitenutil.DebugPrint(screen, name)
+	currentAnim.DrawAndUpdate(screen, 50, 50)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+	return 200, 200
 }
 
 func main() {
-	eb.SetWindowSize(640, 480)
-	eb.SetWindowTitle("~Gome~")
+	eb.SetWindowSize(400, 400)
+	eb.SetWindowTitle("Iron Express")
 	eb.SetWindowResizingMode(eb.WindowResizingModeEnabled)
 
 	if err := eb.RunGame(&Game{}); err != nil {

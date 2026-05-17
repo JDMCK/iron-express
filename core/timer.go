@@ -12,10 +12,10 @@ type Timer struct {
 
 func NewTimer(duration, maxCycles int, repeat bool, onComplete func()) Timer {
 	return Timer{
+		Cycles:    0,
 		elapsed:   0,
 		duration:  duration,
 		maxCycles: maxCycles,
-		Cycles:    0,
 		repeat:    repeat,
 		paused:    false,
 	}
