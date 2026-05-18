@@ -55,13 +55,13 @@ func (s *System) GetAction(a Action) Mode {
 	for _, b := range bindings {
 		switch b.source {
 		case KeyboardKey:
-			isPressed = inpututil.IsKeyJustPressed(eb.Key(b.value)) || isPressed
+			isPressed = eb.IsKeyPressed(eb.Key(b.value)) || isPressed
 			isReleased = inpututil.IsKeyJustReleased(eb.Key(b.value)) || isReleased
 		case MouseButton:
-			isPressed = inpututil.IsMouseButtonJustPressed(eb.MouseButton(b.value)) || isPressed
+			isPressed = eb.IsMouseButtonPressed(eb.MouseButton(b.value)) || isPressed
 			isReleased = inpututil.IsMouseButtonJustReleased(eb.MouseButton(b.value)) || isReleased
 		case GamepadButton:
-			isPressed = inpututil.IsGamepadButtonJustPressed(s.gamepadId, eb.GamepadButton(b.value)) || isPressed
+			isPressed = eb.IsGamepadButtonPressed(s.gamepadId, eb.GamepadButton(b.value)) || isPressed
 			isReleased = inpututil.IsGamepadButtonJustReleased(s.gamepadId, eb.GamepadButton(b.value)) || isReleased
 		}
 	}

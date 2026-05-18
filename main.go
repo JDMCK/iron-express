@@ -17,6 +17,7 @@ func init() {
 }
 
 func (g *Game) Update() error {
+	g.player.Update(g)
 	return nil
 }
 
