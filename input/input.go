@@ -65,6 +65,10 @@ func (s *System) GetAction(a Action) Mode {
 			isReleased = inpututil.IsGamepadButtonJustReleased(s.gamepadId, eb.GamepadButton(b.value)) || isReleased
 		}
 	}
+
+	if a == Jump {
+		fmt.Println(bindings)
+	}
 	return Mode{
 		IsPressed:  isPressed,
 		IsReleased: isReleased,
