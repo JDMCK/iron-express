@@ -7,6 +7,7 @@ import (
 )
 
 type Atlas struct {
+	// TODO: cache each subimage instead of creating one each frame
 	img         *eb.Image
 	frameWidth  int
 	frameHeight int

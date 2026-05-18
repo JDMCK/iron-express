@@ -11,7 +11,7 @@ import (
 	ebutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-const atlasConfigPath = "configs/sprites/%s.atlas.config"
+const atlasConfigPath = "config/sprites/%s.atlas.config"
 
 func LoadAnimationAtlas(name string) (gfx.AnimationMap, error) {
 	data, err := os.ReadFile(fmt.Sprintf(atlasConfigPath, strings.ToLower(name)))
@@ -26,8 +26,8 @@ func LoadAnimationAtlas(name string) (gfx.AnimationMap, error) {
 		img         *eb.Image
 		atlas       *gfx.Atlas
 		rawAnims    []string
-		animsMap    gfx.AnimationMap
 	)
+	animsMap := make(gfx.AnimationMap)
 
 	for _, line := range lines {
 		k, v, err := ParseKV(line)
@@ -55,7 +55,6 @@ func LoadAnimationAtlas(name string) (gfx.AnimationMap, error) {
 		}
 	}
 
-	animsMap = make(gfx.AnimationMap)
 	atlas = gfx.NewAtlas(img, frameWidth, frameHeight)
 	for _, rawAnim := range rawAnims {
 		name, anim, err := parseAnimation(rawAnim, atlas)
@@ -85,12 +84,4 @@ func parseAnimation(line string, atlas *gfx.Atlas) (string, *gfx.Animation, erro
 	}
 
 	return name, gfx.NewAnimation(atlas, row, duration, frames, loop), nil
-}
-
-func ParseKV(line string) (string, string, error) {
-	key, value, found := strings.Cut(line, "=")
-	if !found {
-		return "", "", fmt.Errorf("Invalid line %s", line)
-	}
-	return strings.TrimSpace(key), strings.TrimSpace(value), nil
 }
