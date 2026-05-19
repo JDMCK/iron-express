@@ -47,14 +47,18 @@ func (a *Animation) TogglePause() {
 	a.timer.TogglePause()
 }
 
-func (a *Animation) Draw(screen *eb.Image, x, y int) {
+func (a *Animation) Draw(screen *eb.Image, x, y int, facingRight bool) {
 	op := &eb.DrawImageOptions{}
+	if facingRight == false {
+		op.GeoM.Scale(-1, 1)
+		op.GeoM.Translate(float64(a.atlas.frameWidth), 0)
+	}
 	op.GeoM.Translate(float64(x), float64(y))
 	frame := a.atlas.GetFrame(a.row, a.timer.Cycles).(*eb.Image)
 	screen.DrawImage(frame, op)
 }
 
-func (a *Animation) DrawAndUpdate(screen *eb.Image, x, y int) {
-	a.Draw(screen, x, y)
+func (a *Animation) DrawAndUpdate(screen *eb.Image, x, y int, facingRight bool) {
+	a.Draw(screen, x, y, facingRight)
 	a.Update()
 }

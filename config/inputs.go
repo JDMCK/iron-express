@@ -66,7 +66,7 @@ func parseInput(line string) (input.Action, []input.Binding, error) {
 	default:
 		return 0, nil, fmt.Errorf("Input %s not recognized", actionPart)
 	}
-	bindings := make([]input.Binding, 4)
+	bindings := make([]input.Binding, 0)
 
 	// keyboard
 	key, err := strconv.Atoi(parts[1])

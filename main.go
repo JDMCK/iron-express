@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"log"
 
 	eb "github.com/hajimehoshi/ebiten/v2"
@@ -22,6 +23,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *eb.Image) {
+	screen.Fill(color.RGBA{10, 180, 255, 255})
 	g.player.Draw(screen)
 }
 
@@ -30,9 +32,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	eb.SetWindowSize(400, 400)
+	eb.SetWindowSize(800, 800)
 	eb.SetWindowTitle("Iron Express")
-	// eb.SetWindowResizingMode(eb.WindowResizingModeEnabled)
 
 	if err := eb.RunGame(game); err != nil {
 		log.Fatal(err)

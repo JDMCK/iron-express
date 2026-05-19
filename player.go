@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"iron-express/config"
 	"iron-express/core"
 	"iron-express/gfx"
@@ -24,6 +23,7 @@ type Player struct {
 	acceleration core.Vector2
 	state        string
 	animations   gfx.AnimationMap
+	facingRight  bool
 	isGrounded   bool
 }
 
@@ -40,10 +40,21 @@ func NewPlayer() (*Player, error) {
 
 func (p *Player) Update(g *Game) {
 	move(p, g)
+
+	switch {
+	case p.velocity.Y < 0 && p.isGrounded == false:
+		p.state = Jumping
+	case p.velocity.Y > 0 && p.isGrounded == false:
+		p.state = Falling
+	case math.Abs(p.velocity.X) > 0:
+		p.state = Running
+	default:
+		p.state = Idling
+	}
 }
 
 func (p *Player) Draw(screen *eb.Image) {
-	p.animations[p.state].DrawAndUpdate(screen, int(p.position.X), int(p.position.Y))
+	p.animations[p.state].DrawAndUpdate(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
 // Horizontal
@@ -53,10 +64,10 @@ const maxRunSpeed float64 = 2
 const horizontalEpsilon float64 = 0.01
 
 // Vertical
-const jumpSpeed float64 = 3
-const maxJumpSpeed float64 = 4
-const maxFallSpeed float64 = 2
-const gravityAcceleration float64 = 2
+const jumpSpeed float64 = 7
+const maxJumpSpeed float64 = 7
+const maxFallSpeed float64 = 10
+const gravityAcceleration float64 = 0.5
 
 const TEMPGround float64 = 100
 
@@ -64,8 +75,10 @@ func move(p *Player, g *Game) {
 	// ----- Horizontal -----
 	if g.Input.GetAction(input.Left).IsPressed {
 		p.acceleration.X = -runAcceleration
+		p.facingRight = false
 	} else if g.Input.GetAction(input.Right).IsPressed {
 		p.acceleration.X = runAcceleration
+		p.facingRight = true
 	} else {
 		p.acceleration.X = 0
 
@@ -75,12 +88,6 @@ func move(p *Player, g *Game) {
 		}
 	}
 
-	if g.Input.GetAction(input.Left).IsPressed {
-		fmt.Println("Left")
-	}
-	if g.Input.GetAction(input.Jump).IsPressed {
-		fmt.Println("jump")
-	}
 	p.velocity.X = p.acceleration.X + p.velocity.X
 	p.position.X = p.velocity.X + p.position.X
 
@@ -95,26 +102,21 @@ func move(p *Player, g *Game) {
 	// ----- Vertical -----
 	p.isGrounded = p.position.Y >= 100
 	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
+		p.acceleration.Y = 0
 		p.velocity.Y = -jumpSpeed
-	} else {
-		p.velocity.Y = 0
 	}
 
 	// apply gravity
-	if !p.isGrounded && p.position.Y < 100 {
+	if p.isGrounded == false && p.position.Y < 100 {
 		p.acceleration.Y = gravityAcceleration
 	}
 
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 
-	// snap to floor (temp)
-	if p.position.Y >= 100 {
-		p.acceleration.Y = 0
-		p.position.Y = 100
-	}
-
 	p.velocity.Y = p.acceleration.Y + p.velocity.Y
 	p.position.Y = p.velocity.Y + p.position.Y
 
+	// snap to floor (temp)
+	p.position.Y = core.Clamp(0, 100, p.position.Y)
 	// fmt.Println("acc: ", p.acceleration, "vel: ", p.velocity, "pos: ", p.position, "grounded: ", p.isGrounded)
 }
