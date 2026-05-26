@@ -41,6 +41,7 @@ func NewPlayer() (*Player, error) {
 
 func (p *Player) Update(g *Game) {
 	move(p, g)
+	p.animations[p.state].Update()
 
 	switch {
 	case g.Input.GetAction(input.Primary).IsPressed:

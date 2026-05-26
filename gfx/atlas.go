@@ -21,7 +21,6 @@ func (a *Atlas) GetFrame(row, col int) image.Image {
 	frameY := boundedRow * a.frameHeight
 	frameRect := image.Rect(frameX, frameY, frameX+a.frameWidth, frameY+a.frameHeight)
 	return a.img.SubImage(frameRect)
-
 }
 
 // returns amount of rows and cols of frames in this atlas
