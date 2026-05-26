@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	Idling  = "idle"
-	Running = "run"
-	Jumping = "jump" // moving up
-	Falling = "fall" // moving down
+	Idling   = "idle"
+	Running  = "run"
+	Jumping  = "jump" // moving up
+	Falling  = "fall" // moving down
+	Shooting = "shoot"
 )
 
 type Player struct {
@@ -42,6 +43,8 @@ func (p *Player) Update(g *Game) {
 	move(p, g)
 
 	switch {
+	case g.Input.GetAction(input.Primary).IsPressed:
+		p.state = Shooting
 	case p.velocity.Y < 0 && p.isGrounded == false:
 		p.state = Jumping
 	case p.velocity.Y > 0 && p.isGrounded == false:
@@ -54,7 +57,7 @@ func (p *Player) Update(g *Game) {
 }
 
 func (p *Player) Draw(screen *eb.Image) {
-	p.animations[p.state].DrawAndUpdate(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
 // Horizontal

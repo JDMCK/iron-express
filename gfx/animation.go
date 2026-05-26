@@ -57,8 +57,3 @@ func (a *Animation) Draw(screen *eb.Image, x, y int, facingRight bool) {
 	frame := a.atlas.GetFrame(a.row, a.timer.Cycles).(*eb.Image)
 	screen.DrawImage(frame, op)
 }
-
-func (a *Animation) DrawAndUpdate(screen *eb.Image, x, y int, facingRight bool) {
-	a.Draw(screen, x, y, facingRight)
-	a.Update()
-}
