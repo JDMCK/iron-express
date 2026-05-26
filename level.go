@@ -13,5 +13,6 @@ type Layer struct {
 }
 
 type Level struct {
-	layers []Layer
+	layers  []Layer
+	enemies []Enemy
 }
