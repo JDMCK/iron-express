@@ -26,6 +26,7 @@ type Player struct {
 	animations   gfx.AnimationMap
 	facingRight  bool
 	isGrounded   bool
+	Collider     core.Collider
 }
 
 func NewPlayer() (*Player, error) {
@@ -33,9 +34,13 @@ func NewPlayer() (*Player, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	collider := core.NewCollider()
+
 	return &Player{
 		state:      Idling,
 		animations: anims,
+		Collider:   collider,
 	}, nil
 }
 
@@ -58,6 +63,7 @@ func (p *Player) Update(g *Game) {
 }
 
 func (p *Player) Draw(screen *eb.Image) {
+	p.Collider.Draw(screen)
 	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
@@ -122,5 +128,7 @@ func move(p *Player, g *Game) {
 
 	// snap to floor (temp)
 	p.position.Y = core.Clamp(0, 100, p.position.Y)
-	// fmt.Println("acc: ", p.acceleration, "vel: ", p.velocity, "pos: ", p.position, "grounded: ", p.isGrounded)
+
+	// Update collision box
+	p.Collider.Position = p.position
 }

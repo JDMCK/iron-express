@@ -1,30 +1,53 @@
 package core
 
+import (
+	"image/color"
+
+	eb "github.com/hajimehoshi/ebiten/v2"
+)
+
 type Collider struct {
-	position Vector2
-	width    int
-	height   int
-	enabled  bool
+	Position Vector2
+	Width    int
+	Height   int
+	Enabled  bool
 }
 
-func IsCollided(self Collider, other Collider) bool {
-	// TODO: assumes position.Y is at the top - might be incorrect
-	selfLeft := float64(self.position.X)
-	selfRight := self.position.X + float64(self.width)
-	selfTop := float64(self.position.Y)
-	selfBottom := self.position.Y - float64(self.height)
-
-	otherLeft := float64(other.position.X)
-	otherRight := other.position.X + float64(other.width)
-	otherTop := float64(other.position.Y)
-	otherBottom := other.position.Y - float64(other.height)
-
-	if selfLeft < otherRight &&
-		selfRight > otherLeft &&
-		selfTop > otherBottom &&
-		selfBottom < otherTop {
-		return true
+func NewCollider() Collider {
+	position := Vector2{
+		X: 0.0,
+		Y: 0.0,
 	}
+	return Collider{
+		Position: position,
+		Width:    1,
+		Height:   1,
+		Enabled:  true,
+	}
+}
 
-	return false
+func IsCollided(c1 Collider, c2 Collider) bool {
+	c1Left := float64(c1.Position.X)
+	c1Right := c1.Position.X + float64(c1.Width)
+	c1Top := float64(c1.Position.Y)
+	c1Bottom := c1.Position.Y - float64(c1.Height)
+
+	c2Left := float64(c2.Position.X)
+	c2Right := c2.Position.X + float64(c2.Width)
+	c2Top := float64(c2.Position.Y)
+	c2Bottom := c2.Position.Y - float64(c2.Height)
+
+	return c1Left < c2Right &&
+		c1Right > c2Left &&
+		c1Top > c2Bottom &&
+		c1Bottom < c2Top
+}
+
+func (c *Collider) Draw(screen *eb.Image) {
+	op := eb.DrawImageOptions{}
+	op.GeoM.Translate(c.Position.X, c.Position.Y)
+	img := eb.NewImage(c.Width, c.Height)
+
+	img.Fill(color.Black)
+	screen.DrawImage(img, &op)
 }
