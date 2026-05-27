@@ -29,13 +29,17 @@ type Player struct {
 	Collider     core.Collider
 }
 
+const playerWidth = 32
+const playerHeight = 32
+
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
 	if err != nil {
 		return nil, err
 	}
 
-	collider := core.NewCollider()
+	pos := core.Vector2{X: 0.0, Y: 0.0}
+	collider := core.NewCollider(pos, playerWidth, playerHeight)
 
 	return &Player{
 		state:      Idling,

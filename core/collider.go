@@ -11,18 +11,20 @@ type Collider struct {
 	Width    int
 	Height   int
 	Enabled  bool
+	img      *eb.Image
 }
 
-func NewCollider() Collider {
-	position := Vector2{
-		X: 0.0,
-		Y: 0.0,
-	}
+func NewCollider(position Vector2, width int, height int) Collider {
+
+	img := eb.NewImage(width, height)
+	img.Fill(color.Black)
+
 	return Collider{
 		Position: position,
-		Width:    1,
-		Height:   1,
+		Width:    width,
+		Height:   height,
 		Enabled:  true,
+		img:      img,
 	}
 }
 
@@ -46,8 +48,5 @@ func IsCollided(c1 Collider, c2 Collider) bool {
 func (c *Collider) Draw(screen *eb.Image) {
 	op := eb.DrawImageOptions{}
 	op.GeoM.Translate(c.Position.X, c.Position.Y)
-	img := eb.NewImage(c.Width, c.Height)
-
-	img.Fill(color.Black)
-	screen.DrawImage(img, &op)
+	screen.DrawImage(c.img, &op)
 }

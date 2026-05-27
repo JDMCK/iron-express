@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"iron-express/config"
 	"iron-express/core"
@@ -29,16 +30,12 @@ func NewGame() (*Game, error) {
 		return nil, err
 	}
 
-	// Ignore for now
-	pos := core.Vector2{X: 0, Y: 90}
-	width := 5
-	height := 5
-	testCollider := core.Collider{
-		Position: pos,
-		Width:    width,
-		Height:   height,
-		Enabled:  true,
-	}
+	// temporary
+	testCollider := core.NewCollider(
+		core.Vector2{X: 0, Y: 90},
+		5,
+		5,
+	)
 
 	return &Game{
 		Input:        *input,
@@ -57,7 +54,10 @@ func initGame() {
 
 func (g *Game) Update() error {
 	g.player.Update(g)
-	// colliding := core.IsCollided(g.player.Collider, g.testCollider)
+	colliding := core.IsCollided(g.player.Collider, g.testCollider)
+	if colliding {
+		fmt.Println("collided!")
+	}
 	return nil
 }
 
