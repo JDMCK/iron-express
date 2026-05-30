@@ -25,6 +25,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *eb.Image) {
 	screen.Fill(color.RGBA{10, 180, 255, 255})
 	g.player.Draw(screen)
+	g.level.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

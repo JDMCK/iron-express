@@ -11,6 +11,7 @@ type Game struct {
 	Input  input.System
 
 	player *Player
+	level  *Level
 }
 
 func NewGame() (*Game, error) {
@@ -22,8 +23,10 @@ func NewGame() (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
+	level := NewLevel()
 	return &Game{
 		Input:  *input,
 		player: player,
+		level:  &level,
 	}, nil
 }
