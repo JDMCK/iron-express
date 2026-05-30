@@ -15,8 +15,8 @@ type Tile struct {
 }
 
 type Layer struct {
-	width  int
-	height int
+	width  int // in tiles
+	height int // in tiles
 	tiles  []Tile
 }
 

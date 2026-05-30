@@ -10,8 +10,9 @@ type Game struct {
 	debug  bool
 	Input  input.System
 
-	player *Player
-	level  *Level
+	player    *Player
+	levels    []Level
+	currLevel int
 }
 
 func NewGame() (*Game, error) {
@@ -23,10 +24,16 @@ func NewGame() (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
+	levels := make([]Level, 0, 1)
 	level := NewLevel()
+	levels = append(levels, level)
 	return &Game{
 		Input:  *input,
 		player: player,
-		level:  &level,
+		levels: levels,
 	}, nil
+}
+
+func (g *Game) GetCurrLevel() *Level {
+	return &g.levels[g.currLevel]
 }
