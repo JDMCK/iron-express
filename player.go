@@ -83,7 +83,7 @@ const maxJumpSpeed float64 = 7
 const maxFallSpeed float64 = 10
 const gravityAcceleration float64 = 0.5
 
-const TEMPGround float64 = 100
+const TEMPGround float64 = 300
 
 func move(p *Player, g *Game) {
 	// ----- Horizontal -----
@@ -114,14 +114,14 @@ func move(p *Player, g *Game) {
 	}
 
 	// ----- Vertical -----
-	p.isGrounded = p.position.Y >= 100
+	p.isGrounded = p.position.Y >= TEMPGround
 	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
 		p.acceleration.Y = 0
 		p.velocity.Y = -jumpSpeed
 	}
 
 	// apply gravity
-	if p.isGrounded == false && p.position.Y < 100 {
+	if p.isGrounded == false && p.position.Y < TEMPGround {
 		p.acceleration.Y = gravityAcceleration
 	}
 
@@ -131,7 +131,7 @@ func move(p *Player, g *Game) {
 	p.position.Y = p.velocity.Y + p.position.Y
 
 	// snap to floor (temp)
-	p.position.Y = core.Clamp(0, 100, p.position.Y)
+	p.position.Y = core.Clamp(0, TEMPGround, p.position.Y)
 
 	// Update collision box
 	p.Collider.Position = p.position

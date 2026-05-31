@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"iron-express/config"
 	"iron-express/core"
+	"iron-express/gui"
 	"iron-express/input"
 	"log"
 
@@ -19,10 +20,12 @@ type Game struct {
 	player    *Player
 	levels    []Level
 	currLevel int
+
+	gui []gui.Element
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 200, 200
+	return 400, 400
 }
 
 func NewGame() (*Game, error) {
@@ -40,10 +43,18 @@ func NewGame() (*Game, error) {
 	level := NewLevel()
 	levels = append(levels, level)
 
+	guiEls := make([]gui.Element, 0)
+	guiEls = append(guiEls, gui.NewBasicButton("Save", 50, 50, gui.Large, gui.Primary, func() { fmt.Println("Saved") }))
+	guiEls = append(guiEls, gui.NewBasicButton("Cancel", 50, 100, gui.Small, gui.Secondary, func() { fmt.Println("Cancel") }))
+	guiEls = append(guiEls, gui.NewBasicButton("Delete", 50, 150, gui.Medium, gui.Danger, func() { fmt.Println("Delete") }))
+	guiEls = append(guiEls, gui.NewNumberPicker(1, 5, 0, 50, 200))
+	guiEls = append(guiEls, gui.NewCheckbox(50, 250))
+
 	return &Game{
 		Input:  *input,
 		player: player,
 		levels: levels,
+		gui:    guiEls,
 	}, nil
 }
 
@@ -59,6 +70,10 @@ var frame = 0
 
 func (g *Game) Update() error {
 	g.player.Update(g)
+
+	for _, e := range g.gui {
+		e.Update()
+	}
 
 	handleCollisions(g)
 
@@ -81,6 +96,9 @@ func (g *Game) Draw(screen *eb.Image) {
 	screen.Fill(color.RGBA{10, 180, 255, 255})
 	g.GetCurrLevel().Draw(screen)
 	g.player.Draw(screen)
+	for _, e := range g.gui {
+		e.Draw(screen)
+	}
 }
 
 func (g *Game) GetCurrLevel() *Level {
