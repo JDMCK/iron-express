@@ -6,17 +6,11 @@ import (
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
-func initGame() *Game {
-	var err error
-	game, err := NewGame()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return game
-}
+var game *Game
 
 func main() {
-	var game *Game = initGame()
+	initGame()
+
 	eb.SetWindowSize(800, 800)
 	eb.SetWindowTitle("Iron Express")
 
