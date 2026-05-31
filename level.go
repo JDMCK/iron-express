@@ -86,7 +86,7 @@ func (l *Layer) Draw(screen *ebiten.Image) {
 
 func NewLevel() Level {
 	return Level{
-		layers: []Layer{NewLayer(5, 5)},
+		layers: []Layer{NewLayer(5, 100)},
 	}
 }
 
