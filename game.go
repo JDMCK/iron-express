@@ -60,16 +60,21 @@ var frame = 0
 func (g *Game) Update() error {
 	g.player.Update(g)
 
-	level := g.GetCurrLevel()
-	for _, layer := range level.layers {
-		if core.IsCollided(g.player.Collider, layer.Collider) {
-			// do something about this
-			fmt.Printf("collided on frame %d\n", frame)
-		}
-	}
+	handleCollisions(g)
 
 	frame += 1
 	return nil
+}
+
+func handleCollisions(g *Game) {
+	// Collision detection
+	level := g.GetCurrLevel()
+	for _, layer := range level.layers {
+		if dir, amt := core.IntersectAABB(g.player.Collider, layer.Collider); dir != core.None {
+			fmt.Println("player collided with layer by %d amount", amt)
+			// TODO: player function to adjust its position
+		}
+	}
 }
 
 func (g *Game) Draw(screen *eb.Image) {
