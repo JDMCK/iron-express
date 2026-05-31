@@ -10,6 +10,7 @@ var game *Game
 
 func main() {
 	initGame()
+
 	eb.SetWindowSize(800, 800)
 	eb.SetWindowTitle("Iron Express")
 

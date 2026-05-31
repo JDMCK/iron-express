@@ -18,6 +18,12 @@ type Game struct {
 
 	player       *Player
 	testCollider core.Collider
+	levels       []Level
+	currLevel    int
+}
+
+func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 200, 200
 }
 
 func NewGame() (*Game, error) {
@@ -65,8 +71,9 @@ func (g *Game) Draw(screen *eb.Image) {
 	screen.Fill(color.RGBA{10, 180, 255, 255})
 	g.player.Draw(screen)
 	g.testCollider.Draw(screen)
+	g.GetCurrLevel().Draw(screen)
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 200, 200
+func (g *Game) GetCurrLevel() *Level {
+	return &g.levels[g.currLevel]
 }
