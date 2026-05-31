@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"iron-express/config"
+	"iron-express/core"
 	"iron-express/input"
 	"log"
 
@@ -53,9 +55,20 @@ func initGame() {
 	}
 }
 
+var tick = 0
+
 func (g *Game) Update() error {
 	g.player.Update(g)
 
+	level := g.GetCurrLevel()
+	for _, layer := range level.layers {
+		if core.IsCollided(g.player.Collider, layer.Collider) {
+			// do something about this
+			fmt.Printf("collided on frame %d\n", tick)
+		}
+	}
+
+	tick += 1
 	return nil
 }
 
