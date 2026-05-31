@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"iron-express/config"
+	"iron-express/core"
 	"iron-express/gui"
 	"iron-express/input"
 	"log"
@@ -65,13 +66,30 @@ func initGame() {
 	}
 }
 
+var frame = 0
+
 func (g *Game) Update() error {
 	g.player.Update(g)
+
 	for _, e := range g.gui {
 		e.Update()
 	}
 
+	handleCollisions(g)
+
+	frame += 1
 	return nil
+}
+
+func handleCollisions(g *Game) {
+	// Collision detection
+	level := g.GetCurrLevel()
+	for _, layer := range level.layers {
+		if dir, amt := core.IntersectAABB(g.player.Collider, layer.Collider); dir != core.None {
+			fmt.Println("player collided with layer by %d amount", amt)
+			// TODO: player function to adjust its position
+		}
+	}
 }
 
 func (g *Game) Draw(screen *eb.Image) {
