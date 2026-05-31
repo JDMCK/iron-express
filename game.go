@@ -55,7 +55,7 @@ func initGame() {
 	}
 }
 
-var tick = 0
+var frame = 0
 
 func (g *Game) Update() error {
 	g.player.Update(g)
@@ -64,11 +64,11 @@ func (g *Game) Update() error {
 	for _, layer := range level.layers {
 		if core.IsCollided(g.player.Collider, layer.Collider) {
 			// do something about this
-			fmt.Printf("collided on frame %d\n", tick)
+			fmt.Printf("collided on frame %d\n", frame)
 		}
 	}
 
-	tick += 1
+	frame += 1
 	return nil
 }
 
