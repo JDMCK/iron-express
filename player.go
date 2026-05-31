@@ -26,21 +26,31 @@ type Player struct {
 	animations   gfx.AnimationMap
 	facingRight  bool
 	isGrounded   bool
+	Collider     core.Collider
 }
+
+const playerWidth = 32
+const playerHeight = 32
 
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
 	if err != nil {
 		return nil, err
 	}
+
+	pos := core.Vector2{X: 0.0, Y: 0.0}
+	collider := core.NewCollider(pos, playerWidth, playerHeight)
+
 	return &Player{
 		state:      Idling,
 		animations: anims,
+		Collider:   collider,
 	}, nil
 }
 
 func (p *Player) Update(g *Game) {
 	move(p, g)
+	p.animations[p.state].Update()
 
 	switch {
 	case g.Input.GetAction(input.Primary).IsPressed:
@@ -57,6 +67,7 @@ func (p *Player) Update(g *Game) {
 }
 
 func (p *Player) Draw(screen *eb.Image) {
+	p.Collider.Draw(screen)
 	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
@@ -72,7 +83,7 @@ const maxJumpSpeed float64 = 7
 const maxFallSpeed float64 = 10
 const gravityAcceleration float64 = 0.5
 
-const TEMPGround float64 = 100
+const TEMPGround float64 = 300
 
 func move(p *Player, g *Game) {
 	// ----- Horizontal -----
@@ -103,14 +114,14 @@ func move(p *Player, g *Game) {
 	}
 
 	// ----- Vertical -----
-	p.isGrounded = p.position.Y >= 100
+	p.isGrounded = p.position.Y >= TEMPGround
 	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
 		p.acceleration.Y = 0
 		p.velocity.Y = -jumpSpeed
 	}
 
 	// apply gravity
-	if p.isGrounded == false && p.position.Y < 100 {
+	if p.isGrounded == false && p.position.Y < TEMPGround {
 		p.acceleration.Y = gravityAcceleration
 	}
 
@@ -120,6 +131,8 @@ func move(p *Player, g *Game) {
 	p.position.Y = p.velocity.Y + p.position.Y
 
 	// snap to floor (temp)
-	p.position.Y = core.Clamp(0, 100, p.position.Y)
-	// fmt.Println("acc: ", p.acceleration, "vel: ", p.velocity, "pos: ", p.position, "grounded: ", p.isGrounded)
+	p.position.Y = core.Clamp(0, TEMPGround, p.position.Y)
+
+	// Update collision box
+	p.Collider.Position = p.position
 }
