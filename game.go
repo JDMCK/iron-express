@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"iron-express/config"
-	"iron-express/core"
 	"iron-express/gui"
 	"iron-express/input"
 	"log"
@@ -23,6 +21,8 @@ type Game struct {
 
 	gui []gui.Element
 }
+
+var frame = 0 // to keep track of the number of frames since the game started
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return 400, 400
@@ -43,12 +43,8 @@ func NewGame() (*Game, error) {
 	level := NewLevel()
 	levels = append(levels, level)
 
+	// Make the GUI
 	guiEls := make([]gui.Element, 0)
-	guiEls = append(guiEls, gui.NewBasicButton("Save", 50, 50, gui.Large, gui.Primary, func() { fmt.Println("Saved") }))
-	guiEls = append(guiEls, gui.NewBasicButton("Cancel", 50, 100, gui.Small, gui.Secondary, func() { fmt.Println("Cancel") }))
-	guiEls = append(guiEls, gui.NewBasicButton("Delete", 50, 150, gui.Medium, gui.Danger, func() { fmt.Println("Delete") }))
-	guiEls = append(guiEls, gui.NewNumberPicker(1, 5, 0, 50, 200))
-	guiEls = append(guiEls, gui.NewCheckbox(50, 250))
 
 	return &Game{
 		Input:  *input,
@@ -66,8 +62,6 @@ func initGame() {
 	}
 }
 
-var frame = 0
-
 func (g *Game) Update() error {
 	g.player.Update(g)
 
@@ -75,21 +69,8 @@ func (g *Game) Update() error {
 		e.Update()
 	}
 
-	handleCollisions(g)
-
 	frame += 1
 	return nil
-}
-
-func handleCollisions(g *Game) {
-	// Collision detection
-	level := g.GetCurrLevel()
-	for _, layer := range level.layers {
-		if dir, amt := core.IntersectAABB(g.player.Collider, layer.Collider); dir != core.None {
-			fmt.Println("player collided with layer by %d amount", amt)
-			// TODO: player function to adjust its position
-		}
-	}
 }
 
 func (g *Game) Draw(screen *eb.Image) {

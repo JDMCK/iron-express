@@ -38,10 +38,11 @@ func NewPlayer() (*Player, error) {
 		return nil, err
 	}
 
-	pos := core.Vector2{X: 0.0, Y: 0.0}
+	pos := core.Vector2{X: 100.0, Y: 0.0}
 	collider := core.NewCollider(pos, playerWidth, playerHeight)
 
 	return &Player{
+		position:   pos,
 		state:      Idling,
 		animations: anims,
 		Collider:   collider,
@@ -49,7 +50,9 @@ func NewPlayer() (*Player, error) {
 }
 
 func (p *Player) Update(g *Game) {
-	move(p, g)
+	// Set velocity to new values based on inputs
+	setPlayerVelocity(p, g)
+	movePlayer(p, g)
 	p.animations[p.state].Update()
 
 	switch {
@@ -74,7 +77,7 @@ func (p *Player) Draw(screen *eb.Image) {
 // Horizontal
 const runAcceleration float64 = 2
 const runDeceleration float64 = 2 // friction
-const maxRunSpeed float64 = 2
+const maxRunSpeed float64 = 5
 const horizontalEpsilon float64 = 0.01
 
 // Vertical
@@ -85,7 +88,7 @@ const gravityAcceleration float64 = 0.5
 
 const TEMPGround float64 = 300
 
-func move(p *Player, g *Game) {
+func setPlayerVelocity(p *Player, g *Game) {
 	// ----- Horizontal -----
 	if g.Input.GetAction(input.Left).IsPressed {
 		p.acceleration.X = -runAcceleration
@@ -103,7 +106,6 @@ func move(p *Player, g *Game) {
 	}
 
 	p.velocity.X = p.acceleration.X + p.velocity.X
-	p.position.X = p.velocity.X + p.position.X
 
 	// apply max velocity
 	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
@@ -128,11 +130,31 @@ func move(p *Player, g *Game) {
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 
 	p.velocity.Y = p.acceleration.Y + p.velocity.Y
-	p.position.Y = p.velocity.Y + p.position.Y
+}
 
-	// snap to floor (temp)
-	p.position.Y = core.Clamp(0, TEMPGround, p.position.Y)
+func movePlayer(p *Player, g *Game) {
+	newPosition := core.Vector2{X: p.velocity.X + p.Collider.Position.X, Y: p.velocity.Y + p.Collider.Position.Y}
+	levelLayers := g.GetCurrLevel().layers
 
-	// Update collision box
-	p.Collider.Position = p.position
+	newPosCol := core.NewCollider(newPosition, playerWidth, playerHeight)
+
+	for _, layer := range levelLayers {
+		dir, amt := core.IntersectAABB(newPosCol, layer.Collider)
+
+		switch dir {
+		case core.XCol:
+			newPosition.X += amt
+		case core.YCol:
+			newPosition.Y += amt
+		default:
+			break
+		}
+	}
+
+	p.position = newPosition
+	p.Collider.Position = newPosition
+
+	// TEMPORARY: ensure player doesn't fall out of the world
+	p.Collider.Position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
+	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 }
