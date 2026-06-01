@@ -49,7 +49,9 @@ func NewPlayer() (*Player, error) {
 }
 
 func (p *Player) Update(g *Game) {
-	move(p, g)
+	// Set velocity to new values based on inputs
+	setPlayerVelocity(p, g)
+	movePlayer(p, g)
 	p.animations[p.state].Update()
 
 	switch {
@@ -85,7 +87,7 @@ const gravityAcceleration float64 = 0.5
 
 const TEMPGround float64 = 300
 
-func move(p *Player, g *Game) {
+func setPlayerVelocity(p *Player, g *Game) {
 	// ----- Horizontal -----
 	if g.Input.GetAction(input.Left).IsPressed {
 		p.acceleration.X = -runAcceleration
@@ -103,7 +105,6 @@ func move(p *Player, g *Game) {
 	}
 
 	p.velocity.X = p.acceleration.X + p.velocity.X
-	p.position.X = p.velocity.X + p.position.X
 
 	// apply max velocity
 	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
@@ -128,11 +129,12 @@ func move(p *Player, g *Game) {
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 
 	p.velocity.Y = p.acceleration.Y + p.velocity.Y
-	p.position.Y = p.velocity.Y + p.position.Y
+}
 
-	// snap to floor (temp)
+func movePlayer(p *Player, g *Game) {
+	p.position.X = p.velocity.X + p.position.X
+	p.position.Y = p.velocity.Y + p.position.Y
 	p.position.Y = core.Clamp(0, TEMPGround, p.position.Y)
 
-	// Update collision box
 	p.Collider.Position = p.position
 }
