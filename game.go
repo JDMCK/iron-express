@@ -75,13 +75,13 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *eb.Image) {
 	screen.Fill(color.RGBA{10, 180, 255, 255})
-	g.getCurrLevel().Draw(screen)
+	g.GetCurrLevel().Draw(screen)
 	g.player.Draw(screen)
 	for _, e := range g.gui {
 		e.Draw(screen)
 	}
 }
 
-func (g *Game) getCurrLevel() *Level {
+func (g *Game) GetCurrLevel() *Level {
 	return &g.levels[g.currLevel]
 }

@@ -18,10 +18,8 @@ type Collider struct {
 type CollisionDirection int
 
 const (
-	Up CollisionDirection = iota
-	Down
-	Left
-	Right
+	YCol CollisionDirection = iota
+	XCol
 	None
 )
 
@@ -66,13 +64,13 @@ func IntersectAABB(c1 Collider, c2 Collider) (CollisionDirection, float64) {
 
 	switch min(dxLeft, dxRight, dyUp, dyDown) {
 	case dxLeft:
-		return Left, dxLeft
+		return XCol, dxLeft
 	case dxRight:
-		return Right, dxRight
+		return XCol, -dxRight
 	case dyUp:
-		return Up, dyUp
+		return YCol, dyUp
 	case dyDown:
-		return Down, dyDown
+		return YCol, -dyDown
 	default:
 		panic("How are we here")
 	}

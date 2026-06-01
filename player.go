@@ -38,10 +38,11 @@ func NewPlayer() (*Player, error) {
 		return nil, err
 	}
 
-	pos := core.Vector2{X: 0.0, Y: 0.0}
+	pos := core.Vector2{X: 100.0, Y: 0.0}
 	collider := core.NewCollider(pos, playerWidth, playerHeight)
 
 	return &Player{
+		position:   pos,
 		state:      Idling,
 		animations: anims,
 		Collider:   collider,
@@ -76,7 +77,7 @@ func (p *Player) Draw(screen *eb.Image) {
 // Horizontal
 const runAcceleration float64 = 2
 const runDeceleration float64 = 2 // friction
-const maxRunSpeed float64 = 2
+const maxRunSpeed float64 = 5
 const horizontalEpsilon float64 = 0.01
 
 // Vertical
@@ -132,9 +133,28 @@ func setPlayerVelocity(p *Player, g *Game) {
 }
 
 func movePlayer(p *Player, g *Game) {
-	p.position.X = p.velocity.X + p.position.X
-	p.position.Y = p.velocity.Y + p.position.Y
-	p.position.Y = core.Clamp(0, TEMPGround, p.position.Y)
+	newPosition := core.Vector2{X: p.velocity.X + p.Collider.Position.X, Y: p.velocity.Y + p.Collider.Position.Y}
+	levelLayers := g.GetCurrLevel().layers
 
-	p.Collider.Position = p.position
+	newPosCol := core.NewCollider(newPosition, playerWidth, playerHeight)
+
+	for _, layer := range levelLayers {
+		dir, amt := core.IntersectAABB(newPosCol, layer.Collider)
+
+		switch dir {
+		case core.XCol:
+			newPosition.X += amt
+		case core.YCol:
+			newPosition.Y += amt
+		default:
+			break
+		}
+	}
+
+	p.position = newPosition
+	p.Collider.Position = newPosition
+
+	// TEMPORARY: ensure player doesn't fall out of the world
+	p.Collider.Position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
+	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 }
