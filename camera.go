@@ -5,11 +5,14 @@ import (
 )
 
 type Camera struct {
-	focusX  float64
-	focusY  float64
+	// the x coord in world space to point the 0, 0 of the camera (top left corner)
+	focusX float64
+	focusY float64
+
 	offsetX float64
 	offsetY float64
-	zoom    float64
+
+	zoom float64
 }
 
 func NewCamera(zoom float64) *Camera {
