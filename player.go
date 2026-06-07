@@ -20,30 +20,30 @@ const (
 )
 
 type Player struct {
-	position     core.Vector2
-	velocity     core.Vector2
-	acceleration core.Vector2
-	state        string
-	animations   gfx.AnimationMap
-	facingRight  bool
-	isGrounded   bool
-	Collider     *core.Collider
+	position    core.Vector2
+	velocity    core.Vector2
+	accel       core.Vector2
+	state       string
+	animations  gfx.AnimationMap
+	facingRight bool
+	isGrounded  bool
+	Collider    *core.Collider
 }
 
 const playerWidth = 32
 const playerHeight = 32
 
 // Horizontal movement
-const runAcceleration float64 = 2
+const runAcceleration float64 = 3
 const runDeceleration float64 = 1.5
 const maxRunSpeed float64 = 7
 const horizontalEpsilon float64 = 0.01
 
 // Vertical movement
-const jumpForce float64 = 5
+const jumpAccel float64 = 5
 const maxJumpSpeed float64 = 7
 const maxFallSpeed float64 = 10
-const gravityAcceleration float64 = 0.9
+const gravityAccel float64 = 0.9
 
 const TEMPGround float64 = 300
 
@@ -100,25 +100,24 @@ func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 
 func setPlayerAccel(p *Player, g *Game) {
 	if g.Input.GetAction(input.Left).IsPressed {
-		p.acceleration.X = -runAcceleration
+		p.accel.X = -runAcceleration
 	} else if g.Input.GetAction(input.Right).IsPressed {
-		p.acceleration.X = runAcceleration
+		p.accel.X = runAcceleration
 	} else {
-		p.acceleration.X = 0
+		p.accel.X = 0
 	}
 
 	// TODO: should set this somewhere else
 	p.isGrounded = p.position.Y >= TEMPGround
 
-	// Jump instantly
 	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
-		p.acceleration.Y = -jumpForce - gravityAcceleration
+		p.accel.Y = -jumpAccel - gravityAccel
 	}
 
 	// Gravity always
-	p.acceleration.Y += gravityAcceleration
+	p.accel.Y += gravityAccel
 
-	p.acceleration.Y = core.Clamp(-jumpForce, gravityAcceleration, p.acceleration.Y)
+	p.accel.Y = core.Clamp(-jumpAccel, gravityAccel, p.accel.Y)
 }
 
 // Calculate and set the horizontal and vertical velocities
@@ -127,7 +126,7 @@ func setPlayerAccel(p *Player, g *Game) {
 //
 // Note that the player only attempts to "move" i.e. change position in movePlayer.
 func setPlayerVelocity(p *Player, g *Game) {
-	p.velocity.X += p.acceleration.X
+	p.velocity.X += p.accel.X
 	p.velocity.X /= runDeceleration
 
 	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
@@ -137,7 +136,7 @@ func setPlayerVelocity(p *Player, g *Game) {
 		p.velocity.X = 0
 	}
 
-	p.velocity.Y += p.acceleration.Y
+	p.velocity.Y += p.accel.Y
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 }
 
@@ -179,8 +178,8 @@ func (p *Player) Shoot() {
 	})
 
 	fmt.Println(aimDir)
-	p.acceleration.X -= aimDir.X * gunPower
-	p.acceleration.Y += aimDir.Y * gunPower
+	p.accel.X -= aimDir.X * gunPower
+	p.accel.Y += aimDir.Y * gunPower
 
 	p.facingRight = aimDir.X >= 0
 }
