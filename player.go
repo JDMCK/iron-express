@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"iron-express/config"
 	"iron-express/core"
 	"iron-express/gfx"
@@ -20,14 +19,15 @@ const (
 )
 
 type Player struct {
-	position    core.Vector2
-	velocity    core.Vector2
-	accel       core.Vector2
-	state       string
-	animations  gfx.AnimationMap
-	facingRight bool
-	isGrounded  bool
-	Collider    *core.Collider
+	position     core.Vector2
+	velocity     core.Vector2
+	accel        core.Vector2
+	state        string
+	animations   gfx.AnimationMap
+	facingRight  bool
+	isGrounded   bool
+	shotCooldown int
+	Collider     *core.Collider
 }
 
 const playerWidth = 32
@@ -35,7 +35,7 @@ const playerHeight = 32
 
 // Horizontal movement
 const runAcceleration float64 = 3
-const runDeceleration float64 = 1.5
+const runDeceleration float64 = 1.3
 const maxRunSpeed float64 = 7
 const horizontalEpsilon float64 = 0.01
 
@@ -48,7 +48,8 @@ const gravityAccel float64 = 0.9
 const TEMPGround float64 = 300
 
 // Gun parameters
-const gunPower float64 = 1
+const gunPower float64 = 20
+const gunDelay int = 30
 
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
@@ -69,7 +70,7 @@ func NewPlayer() (*Player, error) {
 
 func (p *Player) Update(g *Game) {
 	switch {
-	case g.Input.GetAction(input.Primary).IsPressed:
+	case g.Input.GetAction(input.Primary).IsPressed || p.shotCooldown > 0:
 		p.state = Shooting
 	case p.velocity.Y < 0 && p.isGrounded == false:
 		p.state = Jumping
@@ -83,12 +84,23 @@ func (p *Player) Update(g *Game) {
 
 	setPlayerAccel(p, g)
 
+	// Shooting affects acceleration
 	if p.state == Shooting {
 		p.Shoot()
 	}
 
 	setPlayerVelocity(p, g)
 	movePlayer(p, g)
+
+	// TODO: don't change facing param while shooting
+	if p.shotCooldown == 0 {
+		switch {
+		case p.velocity.X > 0:
+			p.facingRight = true
+		case p.velocity.X < 0:
+			p.facingRight = false
+		}
+	}
 
 	p.animations[p.state].Update()
 }
@@ -166,10 +178,12 @@ func movePlayer(p *Player, g *Game) {
 	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 }
 
+// TODO: spawn a bullet in this function
 func (p *Player) Shoot() {
-	// Curr: Influence accel
-	// Set a shooting cooldown
-	// Eventually: spawn a Bullet
+	if p.shotCooldown > 0 {
+		p.shotCooldown -= 1
+		return
+	}
 
 	cursorX, cursorY := eb.CursorPosition()
 	aimDir := core.VectorNormalize(core.Vector2{
@@ -177,9 +191,10 @@ func (p *Player) Shoot() {
 		Y: float64(cursorY) - p.position.Y,
 	})
 
-	fmt.Println(aimDir)
 	p.accel.X -= aimDir.X * gunPower
-	p.accel.Y += aimDir.Y * gunPower
+	p.accel.Y -= aimDir.Y * gunPower
+
+	p.shotCooldown = gunDelay
 
 	p.facingRight = aimDir.X >= 0
 }
