@@ -32,6 +32,20 @@ type Player struct {
 const playerWidth = 32
 const playerHeight = 32
 
+// Horizontal
+const runAcceleration float64 = 2
+const runDeceleration float64 = 2 // friction
+const maxRunSpeed float64 = 5
+const horizontalEpsilon float64 = 0.01
+
+// Vertical
+const jumpSpeed float64 = 7
+const maxJumpSpeed float64 = 7
+const maxFallSpeed float64 = 10
+const gravityAcceleration float64 = 0.5
+
+const TEMPGround float64 = 300
+
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
 	if err != nil {
@@ -53,7 +67,6 @@ func (p *Player) Update(g *Game) {
 	// Set velocity to new values based on inputs
 	setPlayerVelocity(p, g)
 	movePlayer(p, g)
-	p.animations[p.state].Update()
 
 	switch {
 	case g.Input.GetAction(input.Primary).IsPressed:
@@ -67,6 +80,8 @@ func (p *Player) Update(g *Game) {
 	default:
 		p.state = Idling
 	}
+
+	p.animations[p.state].Update()
 }
 
 func (p *Player) Draw(screen *eb.Image) {
@@ -74,20 +89,11 @@ func (p *Player) Draw(screen *eb.Image) {
 	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
-// Horizontal
-const runAcceleration float64 = 2
-const runDeceleration float64 = 2 // friction
-const maxRunSpeed float64 = 5
-const horizontalEpsilon float64 = 0.01
-
-// Vertical
-const jumpSpeed float64 = 7
-const maxJumpSpeed float64 = 7
-const maxFallSpeed float64 = 10
-const gravityAcceleration float64 = 0.5
-
-const TEMPGround float64 = 300
-
+// Calculate and set the horizontal and vertical velocities
+// for the Player. This is based on input presses (which sets accel), current
+// velocity, the max velocity, and gravity.
+//
+// Note that the player only attempts to "move" in movePlayer.
 func setPlayerVelocity(p *Player, g *Game) {
 	// ----- Horizontal -----
 	if g.Input.GetAction(input.Left).IsPressed {
