@@ -69,7 +69,7 @@ func (p *Player) Update(g *Game) {
 	}
 }
 
-func (p *Player) Draw(screen *eb.Image) {
+func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	p.Collider.Draw(screen)
 	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }

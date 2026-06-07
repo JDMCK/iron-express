@@ -4,11 +4,20 @@ import eb "github.com/hajimehoshi/ebiten/v2"
 
 type Parallax struct {
 	layers           *Atlas
-	speedMultipliers float64
+	speedMultipliers []float64
 }
 
-func NewParallax(img *eb.Image, layerWidth int, layers int) *Parallax {
-	// atlas := NewAtlas(img, 1, 4, 64, 32)
+func NewParallax(atlas *Atlas, speedMultipliers []float64) *Parallax {
+	return &Parallax{
+		layers:           atlas,
+		speedMultipliers: speedMultipliers,
+	}
+}
 
-	return nil
+func (p *Parallax) Update() {
+
+}
+
+func (p *Parallax) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
+
 }

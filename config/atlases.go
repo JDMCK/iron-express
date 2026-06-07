@@ -13,6 +13,57 @@ import (
 
 const atlasConfigPath = "config/sprites/%s.atlas.config"
 
+func LoadAtlas(name string) (*gfx.Atlas, error) {
+	data, err := os.ReadFile(fmt.Sprintf(atlasConfigPath, strings.ToLower(name)))
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(data), "\n")
+
+	var (
+		frameWidth  int
+		frameHeight int
+		rows        int
+		cols        int
+		img         *eb.Image
+	)
+
+	for _, line := range lines {
+		k, v, err := ParseKV(line)
+		if err != nil {
+			continue // likely a comment or blank line
+		}
+		switch k {
+		case "atlas_path":
+			img, _, err = ebutil.NewImageFromFile(v)
+			if err != nil {
+				return nil, err
+			}
+		case "frame_width":
+			frameWidth, err = strconv.Atoi(v)
+			if err != nil {
+				return nil, err
+			}
+		case "frame_height":
+			frameHeight, err = strconv.Atoi(v)
+			if err != nil {
+				return nil, err
+			}
+		case "rows":
+			rows, err = strconv.Atoi(v)
+			if err != nil {
+				return nil, err
+			}
+		case "cols":
+			cols, err = strconv.Atoi(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return gfx.NewAtlas(img, rows, cols, frameWidth, frameHeight), nil
+}
+
 func LoadAnimationAtlas(name string) (gfx.AnimationMap, error) {
 	data, err := os.ReadFile(fmt.Sprintf(atlasConfigPath, strings.ToLower(name)))
 	if err != nil {

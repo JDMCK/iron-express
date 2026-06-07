@@ -15,6 +15,8 @@ type Game struct {
 	debug  bool
 	Input  input.System
 
+	cam *Camera
+
 	player    *Player
 	levels    []Level
 	currLevel int
@@ -46,11 +48,14 @@ func NewGame() (*Game, error) {
 	// Make the GUI
 	guiEls := make([]gui.Element, 0)
 
+	cam := NewCamera(1)
+
 	return &Game{
 		Input:  *input,
 		player: player,
 		levels: levels,
 		gui:    guiEls,
+		cam:    cam,
 	}, nil
 }
 
@@ -75,8 +80,11 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *eb.Image) {
 	screen.Fill(color.RGBA{10, 180, 255, 255})
-	g.GetCurrLevel().Draw(screen)
-	g.player.Draw(screen)
+
+	camOp := g.cam.DrawOptions()
+
+	g.GetCurrLevel().Draw(screen, camOp)
+	g.player.Draw(screen, camOp)
 	for _, e := range g.gui {
 		e.Draw(screen)
 	}
