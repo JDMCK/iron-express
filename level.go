@@ -19,7 +19,7 @@ type Layer struct {
 	tilesWidth  int // in tiles
 	tilesHeight int // in tiles
 	tiles       []Tile
-	Collider    core.Collider
+	Collider    *core.Collider
 }
 
 type Level struct {

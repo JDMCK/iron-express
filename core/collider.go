@@ -2,6 +2,7 @@ package core
 
 import (
 	"image/color"
+	"log"
 	"math"
 
 	eb "github.com/hajimehoshi/ebiten/v2"
@@ -18,17 +19,17 @@ type Collider struct {
 type CollisionDirection int
 
 const (
-	YCol CollisionDirection = iota
+	None CollisionDirection = iota
+	YCol
 	XCol
-	None
 )
 
-func NewCollider(position Vector2, width int, height int) Collider {
+func NewCollider(position Vector2, width int, height int) *Collider {
 
 	img := eb.NewImage(width, height)
 	img.Fill(color.Black)
 
-	return Collider{
+	return &Collider{
 		Position: position,
 		Width:    width,
 		Height:   height,
@@ -39,7 +40,7 @@ func NewCollider(position Vector2, width int, height int) Collider {
 
 // Perform aabb collision and return and enum representing the
 // direction of collision (from the perspective of c1)
-func IntersectAABB(c1 Collider, c2 Collider) (CollisionDirection, float64) {
+func IntersectAABB(c1 *Collider, c2 *Collider) (CollisionDirection, float64) {
 	c1Left := float64(c1.Position.X)
 	c1Right := c1.Position.X + float64(c1.Width)
 	c1Top := float64(c1.Position.Y)
@@ -72,7 +73,8 @@ func IntersectAABB(c1 Collider, c2 Collider) (CollisionDirection, float64) {
 	case dyDown:
 		return YCol, -dyDown
 	default:
-		panic("How are we here")
+		log.Fatal("Failed to calculate collision.")
+		return None, 0
 	}
 }
 

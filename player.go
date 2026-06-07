@@ -26,7 +26,7 @@ type Player struct {
 	animations   gfx.AnimationMap
 	facingRight  bool
 	isGrounded   bool
-	Collider     core.Collider
+	Collider     *core.Collider
 }
 
 const playerWidth = 32
@@ -146,8 +146,6 @@ func movePlayer(p *Player, g *Game) {
 			newPosition.X += amt
 		case core.YCol:
 			newPosition.Y += amt
-		default:
-			break
 		}
 	}
 

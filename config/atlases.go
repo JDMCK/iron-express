@@ -55,7 +55,11 @@ func LoadAnimationAtlas(name string) (gfx.AnimationMap, error) {
 		}
 	}
 
-	atlas = gfx.NewAtlas(img, frameWidth, frameHeight)
+	size := img.Bounds().Size()
+	rows := size.Y / frameHeight
+	cols := size.X / frameWidth
+	atlas = gfx.NewAtlas(img, rows, cols, frameWidth, frameHeight)
+
 	for _, rawAnim := range rawAnims {
 		name, anim, err := parseAnimation(rawAnim, atlas)
 		if err != nil {

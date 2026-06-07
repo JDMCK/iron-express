@@ -7,36 +7,47 @@ import (
 )
 
 type Atlas struct {
-	// TODO: cache each subimage instead of creating one each frame
-	img         *eb.Image
+	frames      []*eb.Image
+	rows        int
+	cols        int
 	frameWidth  int
 	frameHeight int
 }
 
 func (a *Atlas) GetFrame(row, col int) image.Image {
-	totalRows, totalCols := a.getDims()
-	boundedRow := row % totalRows
-	boundedCol := col % totalCols
-	frameX := boundedCol * a.frameWidth
-	frameY := boundedRow * a.frameHeight
-	frameRect := image.Rect(frameX, frameY, frameX+a.frameWidth, frameY+a.frameHeight)
-	return a.img.SubImage(frameRect)
+	if row >= a.rows || col >= a.cols {
+		return nil
+	}
+	index := row*a.cols + col
+	return a.frames[index]
 }
 
-// returns amount of rows and cols of frames in this atlas
+func loadFrame(img *eb.Image, row, col int, frameWidth, frameHeight int) *eb.Image {
+	frameX := col * frameWidth
+	frameY := row * frameHeight
+	frameRect := image.Rect(frameX, frameY, frameX+frameWidth, frameY+frameHeight)
+	return img.SubImage(frameRect).(*eb.Image)
+}
+
 func (a *Atlas) getDims() (rows, cols int) {
-	width, height := a.getPixelDims()
-	return height / a.frameHeight, width / a.frameWidth
+	return a.rows, a.cols
 }
 
 func (a *Atlas) getPixelDims() (width, height int) {
-	point := a.img.Bounds().Size()
-	return point.X, point.Y
+	return a.cols * a.frameWidth, a.rows * a.frameHeight
 }
 
-func NewAtlas(img *eb.Image, frameWidth, frameHeight int) *Atlas {
+func NewAtlas(img *eb.Image, rows, cols int, frameWidth, frameHeight int) *Atlas {
+	frames := make([]*eb.Image, 0, rows*cols)
+	for r := range rows {
+		for c := range cols {
+			frames = append(frames, loadFrame(img, r, c, frameWidth, frameHeight))
+		}
+	}
 	return &Atlas{
-		img:         img,
+		frames:      frames,
+		rows:        rows,
+		cols:        cols,
 		frameWidth:  frameWidth,
 		frameHeight: frameHeight,
 	}
