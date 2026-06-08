@@ -10,6 +10,11 @@ import (
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
+var WindowWidth = 1280
+var WindowHeight = 720
+var WorldWidth = 320
+var WorldHeight = 180
+
 type Game struct {
 	paused bool
 	debug  bool
@@ -27,7 +32,7 @@ type Game struct {
 var frame = 0 // to keep track of the number of frames since the game started
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 400, 400
+	return 320, 180
 }
 
 func NewGame() (*Game, error) {
@@ -49,6 +54,7 @@ func NewGame() (*Game, error) {
 	guiEls := make([]gui.Element, 0)
 
 	cam := NewCamera(1)
+	cam.CenterScreenOffset(WorldWidth-player.Collider.Width, WorldHeight*2-player.Collider.Height*2)
 
 	return &Game{
 		Input:  *input,
@@ -69,10 +75,12 @@ func initGame() {
 
 func (g *Game) Update() error {
 	g.player.Update(g)
-
 	for _, e := range g.gui {
 		e.Update()
 	}
+	g.levels[g.currLevel].Update()
+
+	g.cam.SetFocus(g.player.position.X, g.player.position.Y, 1)
 
 	frame += 1
 	return nil
@@ -83,8 +91,10 @@ func (g *Game) Draw(screen *eb.Image) {
 
 	camOp := g.cam.DrawOptions()
 
-	g.GetCurrLevel().Draw(screen, camOp)
-	g.player.Draw(screen, camOp)
+	g.GetCurrLevel().Draw(screen, g.cam.focusX, g.cam.focusY, camOp)
+
+	g.player.Draw(screen, camOp, g.debug)
+
 	for _, e := range g.gui {
 		e.Draw(screen)
 	}

@@ -44,7 +44,7 @@ const maxJumpSpeed float64 = 7
 const maxFallSpeed float64 = 10
 const gravityAcceleration float64 = 0.5
 
-const TEMPGround float64 = 300
+const TEMPGround float64 = 148
 
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
@@ -84,9 +84,11 @@ func (p *Player) Update(g *Game) {
 	p.animations[p.state].Update()
 }
 
-func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
-	p.Collider.Draw(screen)
-	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions, debug bool) {
+	if debug {
+		p.Collider.Draw(screen)
+	}
+	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight, op)
 }
 
 // Calculate and set the horizontal and vertical velocities

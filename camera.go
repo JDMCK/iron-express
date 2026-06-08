@@ -21,6 +21,11 @@ func NewCamera(zoom float64) *Camera {
 	}
 }
 
+func (c *Camera) SetFocus(x, y float64, drag float64) {
+	c.focusX = x
+	c.focusY = y
+}
+
 func (c *Camera) CenterScreenOffset(screenWidth, screenHeight int) {
 	c.offsetX = float64(screenWidth) / 2
 	c.offsetY = float64(screenHeight) / 2

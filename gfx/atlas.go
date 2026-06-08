@@ -7,11 +7,11 @@ import (
 )
 
 type Atlas struct {
-	frames      []*eb.Image
+	Frames      []*eb.Image
 	rows        int
 	cols        int
-	frameWidth  int
-	frameHeight int
+	FrameWidth  int
+	FrameHeight int
 }
 
 func (a *Atlas) GetFrame(row, col int) image.Image {
@@ -19,7 +19,7 @@ func (a *Atlas) GetFrame(row, col int) image.Image {
 		return nil
 	}
 	index := row*a.cols + col
-	return a.frames[index]
+	return a.Frames[index]
 }
 
 func loadFrame(img *eb.Image, row, col int, frameWidth, frameHeight int) *eb.Image {
@@ -34,7 +34,7 @@ func (a *Atlas) getDims() (rows, cols int) {
 }
 
 func (a *Atlas) getPixelDims() (width, height int) {
-	return a.cols * a.frameWidth, a.rows * a.frameHeight
+	return a.cols * a.FrameWidth, a.rows * a.FrameHeight
 }
 
 func NewAtlas(img *eb.Image, rows, cols int, frameWidth, frameHeight int) *Atlas {
@@ -45,10 +45,10 @@ func NewAtlas(img *eb.Image, rows, cols int, frameWidth, frameHeight int) *Atlas
 		}
 	}
 	return &Atlas{
-		frames:      frames,
+		Frames:      frames,
 		rows:        rows,
 		cols:        cols,
-		frameWidth:  frameWidth,
-		frameHeight: frameHeight,
+		FrameWidth:  frameWidth,
+		FrameHeight: frameHeight,
 	}
 }
