@@ -22,8 +22,6 @@ func (p *Parallax) Update() {
 
 func (p *Parallax) Draw(screen *eb.Image, x, y float64, op *eb.DrawImageOptions) {
 	for i := len(p.layers.Frames) - 1; i >= 0; i-- { // draw from back to front
-		// newOp := eb.DrawImageOptions{}
-		// newOp.GeoM.T
 		beforeGeoM := eb.DrawImageOptions{}
 		beforeGeoM.GeoM.Translate(-float64(p.layers.FrameWidth)+x*p.speedMultipliers[i], 0)
 		beforeGeoM.GeoM.Concat(op.GeoM)
