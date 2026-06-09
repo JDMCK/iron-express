@@ -21,7 +21,7 @@ func (p *Parallax) Update() {
 }
 
 func (p *Parallax) Draw(screen *eb.Image, x, y float64, op *eb.DrawImageOptions) {
-	for i := len(p.layers.Frames) - 1; i >= 0; i-- { // draw from back to front
+	for i := range p.layers.Frames {
 		shiftSpeed := p.speedMultipliers[i]
 		layerOffset := x * shiftSpeed
 		frameWidth := float64(p.layers.FrameWidth)
