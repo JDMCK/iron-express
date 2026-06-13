@@ -86,7 +86,7 @@ func (p *Player) Update(g *Game) {
 		p.facingRight = false
 	}
 
-	setAnimState(p)
+	checkAnimState(p)
 	p.animations[p.animState].Update()
 }
 
@@ -95,7 +95,7 @@ func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	p.animations[p.animState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
-func setAnimState(p *Player) {
+func checkAnimState(p *Player) {
 	if p.shotCooldown > 0 {
 		p.animState = Shooting
 	} else if p.velocity.Y < 0 && p.isGrounded == false {
