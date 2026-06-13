@@ -22,7 +22,6 @@ type Player struct {
 	position     core.Vector2
 	velocity     core.Vector2
 	accel        core.Vector2
-	moveState    string
 	animState    string
 	animations   gfx.AnimationMap
 	facingRight  bool
@@ -63,7 +62,6 @@ func NewPlayer() (*Player, error) {
 
 	return &Player{
 		position:   pos,
-		moveState:  Idling,
 		animState:  Idling,
 		animations: anims,
 		Collider:   collider,
@@ -71,8 +69,6 @@ func NewPlayer() (*Player, error) {
 }
 
 func (p *Player) Update(g *Game) {
-	setMoveState(p)
-
 	setPlayerAccel(p, g)
 
 	// Movement changes from shooting should come after player movement (?)
@@ -97,19 +93,6 @@ func (p *Player) Update(g *Game) {
 func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	p.Collider.Draw(screen)
 	p.animations[p.animState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
-}
-
-// Determine what movement state the player is in, e.g. falling, jumping, etc.
-func setMoveState(p *Player) {
-	if p.velocity.Y < 0 && !p.isGrounded { // BUG: at the top of a jump, Y velocity == 0, but we are still jumping
-		p.moveState = Jumping
-	} else if p.velocity.Y > 0 && !p.isGrounded {
-		p.moveState = Falling
-	} else if math.Abs(p.velocity.X) > 0 {
-		p.moveState = Running
-	} else {
-		p.moveState = Idling
-	}
 }
 
 func setAnimState(p *Player) {
