@@ -38,5 +38,5 @@ func NewEnemy() (*Enemy, error) {
 
 func (e *Enemy) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	e.Collider.Draw(screen)
-	e.animations[e.state].Draw(screen, int(e.position.X), int(e.position.Y), e.facingRight)
+	e.animations[e.state].Draw(screen, int(e.position.X), int(e.position.Y), e.facingRight, op)
 }
