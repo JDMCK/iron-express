@@ -38,18 +38,22 @@ const runAcceleration float64 = 1
 const runDeceleration float64 = 1
 const maxRunSpeed float64 = 4
 
+// Gun related horizontal speed params
+const maxTotalSpeed float64 = 10
+const speedDecay float64 = 0.2
+
 // Vertical movement
-const jumpAccel float64 = 4
+const jumpPower float64 = 4
 const maxJumpSpeed float64 = 8
-const maxFallSpeed float64 = 10
-const gravity float64 = 1
+const maxFallSpeed float64 = 8
+const gravity float64 = 0.7
 
 const TEMPGround float64 = 300
 
 // Gun parameters
-const gunPowerX float64 = 25
+const gunPowerX float64 = 6
 const gunPowerY float64 = 4
-const gunDelay int = 30
+const gunDelay int = 20
 
 func NewPlayer() (*Player, error) {
 	anims, err := config.LoadAnimationAtlas("player")
@@ -71,8 +75,11 @@ func NewPlayer() (*Player, error) {
 func (p *Player) Update(g *Game) {
 	setPlayerAccel(p, g)
 
-	// Movement changes from shooting should come after player movement (?)
-	if g.Input.GetAction(input.Primary).IsPressed || p.shotCooldown > 0 {
+	if p.shotCooldown > 0 {
+		p.shotCooldown -= 1
+	}
+
+	if g.Input.GetAction(input.Primary).IsPressed && p.shotCooldown == 0 {
 		p.Shoot()
 	}
 
@@ -111,9 +118,9 @@ func checkAnimState(p *Player) {
 
 // Handles player acceleration from player input.
 func setPlayerAccel(p *Player, g *Game) {
-	if g.Input.GetAction(input.Left).IsPressed {
+	if g.Input.GetAction(input.Left).IsPressed && p.velocity.X > -maxRunSpeed {
 		p.accel.X = -runAcceleration
-	} else if g.Input.GetAction(input.Right).IsPressed {
+	} else if g.Input.GetAction(input.Right).IsPressed && p.velocity.X < maxRunSpeed {
 		p.accel.X = runAcceleration
 	} else {
 		p.accel.X = 0
@@ -122,37 +129,25 @@ func setPlayerAccel(p *Player, g *Game) {
 	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
 		// Perform a jump
 		p.isGrounded = false
-		p.accel.Y = -jumpAccel - gravity
+		p.accel.Y = -jumpPower - gravity
 	}
 	p.accel.Y += gravity
 
-	p.accel.Y = core.Clamp(-jumpAccel, gravity, p.accel.Y)
+	p.accel.Y = core.Clamp(-jumpPower, gravity, p.accel.Y)
 }
 
-// Slow the player down by 'runDeceleration' amount
-func applyPlayerDecel(p *Player) {
-	switch p.velocity.X > 0 {
-	case true:
-		p.velocity.X = math.Max(p.velocity.X-runDeceleration, 0)
-	case false:
-		p.velocity.X = math.Min(p.velocity.X+runDeceleration, 0)
-	}
-}
-
-// Calculate and set the horizontal and vertical velocities
-// for the Player. This is based on input presses (which sets accel), current
-// velocity, the max velocity, and gravity.
-//
-// Note that the player only attempts to "move" i.e. change position in movePlayer.
+// Calculate and set the horizontal and vertical velocities for the Player
 func setPlayerVelocity(p *Player, g *Game) {
 	p.velocity.X += p.accel.X
 
-	// No player horizontal input
-	if !g.Input.GetAction(input.Left).IsPressed && !g.Input.GetAction(input.Right).IsPressed {
-		applyPlayerDecel(p)
+	if !g.Input.GetAction(input.Left).IsPressed &&
+		!g.Input.GetAction(input.Right).IsPressed { // No player horizontal input
+		applyPlayerDecel(p, runDeceleration)
+	} else if math.Abs(p.velocity.X) > maxRunSpeed { // Gun boost speed decay
+		applyPlayerDecel(p, speedDecay)
 	}
 
-	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
+	p.velocity.X = core.Clamp(-maxTotalSpeed, maxTotalSpeed, p.velocity.X)
 
 	p.velocity.Y += p.accel.Y
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
@@ -189,21 +184,26 @@ func movePlayer(p *Player, g *Game) {
 	}
 }
 
+// Slow the player down by 'decel' amount
+func applyPlayerDecel(p *Player, decel float64) {
+	switch p.velocity.X > 0 {
+	case true:
+		p.velocity.X = math.Max(p.velocity.X-decel, 0)
+	case false:
+		p.velocity.X = math.Min(p.velocity.X+decel, 0)
+	}
+}
+
 // TODO: spawn a bullet in this function
 func (p *Player) Shoot() {
-	if p.shotCooldown > 0 {
-		p.shotCooldown -= 1
-		return
-	}
-
 	cursorX, cursorY := eb.CursorPosition()
 	aimDir := core.VectorNormalize(core.Vector2{
 		X: float64(cursorX) - p.position.X,
 		Y: float64(cursorY) - p.position.Y,
 	})
 
-	p.velocity.X -= aimDir.X * gunPowerX
-	p.velocity.Y -= aimDir.Y * gunPowerY
+	p.accel.X -= aimDir.X * gunPowerX
+	p.accel.Y -= aimDir.Y * gunPowerY
 
 	p.shotCooldown = gunDelay
 
