@@ -22,10 +22,11 @@ type Player struct {
 	position     core.Vector2
 	velocity     core.Vector2
 	accel        core.Vector2
-	state        string
+	moveState    string
+	animState    string
 	animations   gfx.AnimationMap
 	facingRight  bool
-	isGrounded   bool
+	isGrounded   bool // TODO: isGrounded should get replaced by moveState (not jumping or falling)
 	shotCooldown int
 	Collider     *core.Collider
 }
@@ -34,14 +35,13 @@ const playerWidth = 32
 const playerHeight = 32
 
 // Horizontal movement
-const runAcceleration float64 = 3
-const runDeceleration float64 = 1.3
+const runAcceleration float64 = 0.5
+const runDeceleration float64 = 0.5
 const maxRunSpeed float64 = 7
-const horizontalEpsilon float64 = 0.01
 
 // Vertical movement
-const jumpAccel float64 = 5
-const maxJumpSpeed float64 = 7
+const jumpAccel float64 = 4
+const maxJumpSpeed float64 = 10
 const maxFallSpeed float64 = 10
 const gravityAccel float64 = 0.9
 
@@ -62,37 +62,47 @@ func NewPlayer() (*Player, error) {
 
 	return &Player{
 		position:   pos,
-		state:      Idling,
+		moveState:  Idling,
 		animations: anims,
 		Collider:   collider,
 	}, nil
 }
 
-func (p *Player) Update(g *Game) {
-	switch {
-	case g.Input.GetAction(input.Primary).IsPressed || p.shotCooldown > 0:
-		p.state = Shooting
-	case p.velocity.Y < 0 && p.isGrounded == false:
-		p.state = Jumping
-	case p.velocity.Y > 0 && p.isGrounded == false:
-		p.state = Falling
-	case math.Abs(p.velocity.X) > 0:
-		p.state = Running
-	default:
-		p.state = Idling
+func setStates(p *Player) {
+	if p.velocity.Y < 0 && p.isGrounded == false {
+		p.moveState = Jumping
+		p.animState = Jumping
+	} else if p.velocity.Y > 0 && p.isGrounded == false {
+		p.moveState = Falling
+		p.animState = Falling
+	} else if math.Abs(p.velocity.X) > 0 {
+		p.moveState = Running
+		p.animState = Running
+	} else {
+		p.moveState = Idling
+		p.animState = Idling
 	}
+}
 
+func (p *Player) Update(g *Game) {
+	// Determine what state the player is in, e.g. falling, jumping, etc.
+	setStates(p)
+
+	// Accelerate the player based on their state
 	setPlayerAccel(p, g)
 
-	// Shooting affects acceleration
-	if p.state == Shooting {
+	// Handle a shot from the player's gun
+	if g.Input.GetAction(input.Primary).IsPressed == true || p.shotCooldown > 0 {
+		p.animState = Shooting
 		p.Shoot()
 	}
 
+	// Fix player's velocity based on their acceleration. Handles clamping.
 	setPlayerVelocity(p, g)
+
+	// Attempt to move player to their new position.
 	movePlayer(p, g)
 
-	// TODO: don't change facing param while shooting
 	if p.shotCooldown == 0 {
 		switch {
 		case p.velocity.X > 0:
@@ -102,14 +112,16 @@ func (p *Player) Update(g *Game) {
 		}
 	}
 
-	p.animations[p.state].Update()
+	p.animations[p.animState].Update()
 }
 
 func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	p.Collider.Draw(screen)
-	p.animations[p.state].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+	p.animations[p.moveState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
 }
 
+// Handles player acceleration from player input.
+// Rule of thumb: we SET acceleration, and ADD to velocity.
 func setPlayerAccel(p *Player, g *Game) {
 	if g.Input.GetAction(input.Left).IsPressed {
 		p.accel.X = -runAcceleration
@@ -119,14 +131,10 @@ func setPlayerAccel(p *Player, g *Game) {
 		p.accel.X = 0
 	}
 
-	// TODO: should set this somewhere else
-	p.isGrounded = p.position.Y >= TEMPGround
-
-	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
+	if g.Input.GetAction(input.Jump).IsPressed && p.moveState != Falling && p.moveState != Jumping {
+		// Perform a jump
 		p.accel.Y = -jumpAccel - gravityAccel
 	}
-
-	// Gravity always
 	p.accel.Y += gravityAccel
 
 	p.accel.Y = core.Clamp(-jumpAccel, gravityAccel, p.accel.Y)
@@ -139,14 +147,18 @@ func setPlayerAccel(p *Player, g *Game) {
 // Note that the player only attempts to "move" i.e. change position in movePlayer.
 func setPlayerVelocity(p *Player, g *Game) {
 	p.velocity.X += p.accel.X
-	p.velocity.X /= runDeceleration
+
+	// No player horizontal input
+	if !g.Input.GetAction(input.Left).IsPressed && !g.Input.GetAction(input.Right).IsPressed {
+		switch p.velocity.X > 0 {
+		case true:
+			p.velocity.X = math.Max(p.velocity.X-runDeceleration, 0)
+		case false:
+			p.velocity.X = math.Min(p.velocity.X+runDeceleration, 0)
+		}
+	}
 
 	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
-
-	// stop micro velocity
-	if math.Abs(p.velocity.X) <= horizontalEpsilon {
-		p.velocity.X = 0
-	}
 
 	p.velocity.Y += p.accel.Y
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
@@ -176,6 +188,7 @@ func movePlayer(p *Player, g *Game) {
 	// TEMPORARY: ensure player doesn't fall out of the world
 	p.Collider.Position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
+	p.isGrounded = p.position.Y >= TEMPGround
 }
 
 // TODO: spawn a bullet in this function

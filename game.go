@@ -42,13 +42,13 @@ func NewGame() (*Game, error) {
 		return nil, err
 	}
 
-	enemy, err := NewEnemy()
-	if err != nil {
-		return nil, err
-	}
+	// enemy, err := NewEnemy()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	enemies := make([]*Enemy, 0, 10)
-	enemies = append(enemies, enemy)
+	// enemies = append(enemies, enemy)
 
 	// Make the initial level
 	levels := make([]Level, 0, 1)
