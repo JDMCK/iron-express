@@ -48,7 +48,7 @@ const maxJumpSpeed float64 = 8
 const maxFallSpeed float64 = 8
 const gravity float64 = 0.7
 
-const TEMPGround float64 = 300
+const TEMPGround float64 = 148
 
 // Gun parameters
 const gunPowerX float64 = 6
@@ -97,9 +97,11 @@ func (p *Player) Update(g *Game) {
 	p.animations[p.animState].Update()
 }
 
-func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
-	p.Collider.Draw(screen)
-	p.animations[p.animState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions, debug bool) {
+	if debug {
+		p.Collider.Draw(screen)
+	}
+	p.animations[p.animState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight, op)
 }
 
 func checkAnimState(p *Player) {

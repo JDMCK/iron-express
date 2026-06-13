@@ -81,5 +81,6 @@ func IntersectAABB(c1 *Collider, c2 *Collider) (CollisionDirection, float64) {
 func (c *Collider) Draw(screen *eb.Image) {
 	op := eb.DrawImageOptions{}
 	op.GeoM.Translate(c.Position.X, c.Position.Y)
-	screen.DrawImage(c.img, &op)
+
+	DrawBorder(screen, int(c.Position.X), int(c.Position.Y), c.Width, c.Height, color.RGBA{0, 255, 0, 255}, nil)
 }
