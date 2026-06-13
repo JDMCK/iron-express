@@ -26,7 +26,7 @@ type Player struct {
 	animState    string
 	animations   gfx.AnimationMap
 	facingRight  bool
-	isGrounded   bool // TODO: isGrounded should get replaced by moveState (not jumping or falling)
+	isGrounded   bool
 	shotCooldown int
 	Collider     *core.Collider
 }
@@ -35,20 +35,21 @@ const playerWidth = 32
 const playerHeight = 32
 
 // Horizontal movement
-const runAcceleration float64 = 0.5
-const runDeceleration float64 = 0.5
-const maxRunSpeed float64 = 7
+const runAcceleration float64 = 1
+const runDeceleration float64 = 1
+const maxRunSpeed float64 = 4
 
 // Vertical movement
 const jumpAccel float64 = 4
-const maxJumpSpeed float64 = 10
+const maxJumpSpeed float64 = 8
 const maxFallSpeed float64 = 10
-const gravityAccel float64 = 0.9
+const gravity float64 = 1
 
 const TEMPGround float64 = 300
 
 // Gun parameters
-const gunPower float64 = 20
+const gunPowerX float64 = 25
+const gunPowerY float64 = 4
 const gunDelay int = 30
 
 func NewPlayer() (*Player, error) {
@@ -63,65 +64,69 @@ func NewPlayer() (*Player, error) {
 	return &Player{
 		position:   pos,
 		moveState:  Idling,
+		animState:  Idling,
 		animations: anims,
 		Collider:   collider,
 	}, nil
 }
 
-func setStates(p *Player) {
-	if p.velocity.Y < 0 && p.isGrounded == false {
-		p.moveState = Jumping
-		p.animState = Jumping
-	} else if p.velocity.Y > 0 && p.isGrounded == false {
-		p.moveState = Falling
-		p.animState = Falling
-	} else if math.Abs(p.velocity.X) > 0 {
-		p.moveState = Running
-		p.animState = Running
-	} else {
-		p.moveState = Idling
-		p.animState = Idling
-	}
-}
-
 func (p *Player) Update(g *Game) {
-	// Determine what state the player is in, e.g. falling, jumping, etc.
-	setStates(p)
+	setMoveState(p)
 
-	// Accelerate the player based on their state
 	setPlayerAccel(p, g)
 
-	// Handle a shot from the player's gun
-	if g.Input.GetAction(input.Primary).IsPressed == true || p.shotCooldown > 0 {
-		p.animState = Shooting
+	// Movement changes from shooting should come after player movement (?)
+	if g.Input.GetAction(input.Primary).IsPressed || p.shotCooldown > 0 {
 		p.Shoot()
 	}
 
-	// Fix player's velocity based on their acceleration. Handles clamping.
 	setPlayerVelocity(p, g)
 
-	// Attempt to move player to their new position.
 	movePlayer(p, g)
 
-	if p.shotCooldown == 0 {
-		switch {
-		case p.velocity.X > 0:
-			p.facingRight = true
-		case p.velocity.X < 0:
-			p.facingRight = false
-		}
+	if g.Input.GetAction(input.Right).IsPressed {
+		p.facingRight = true
+	} else if g.Input.GetAction(input.Left).IsPressed {
+		p.facingRight = false
 	}
 
+	setAnimState(p)
 	p.animations[p.animState].Update()
 }
 
 func (p *Player) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	p.Collider.Draw(screen)
-	p.animations[p.moveState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+	p.animations[p.animState].Draw(screen, int(p.position.X), int(p.position.Y), p.facingRight)
+}
+
+// Determine what movement state the player is in, e.g. falling, jumping, etc.
+func setMoveState(p *Player) {
+	if p.velocity.Y < 0 && !p.isGrounded { // BUG: at the top of a jump, Y velocity == 0, but we are still jumping
+		p.moveState = Jumping
+	} else if p.velocity.Y > 0 && !p.isGrounded {
+		p.moveState = Falling
+	} else if math.Abs(p.velocity.X) > 0 {
+		p.moveState = Running
+	} else {
+		p.moveState = Idling
+	}
+}
+
+func setAnimState(p *Player) {
+	if p.shotCooldown > 0 {
+		p.animState = Shooting
+	} else if p.velocity.Y < 0 && p.isGrounded == false {
+		p.animState = Jumping
+	} else if p.velocity.Y > 0 && p.isGrounded == false {
+		p.animState = Falling
+	} else if math.Abs(p.velocity.X) > 0 {
+		p.animState = Running
+	} else {
+		p.animState = Idling
+	}
 }
 
 // Handles player acceleration from player input.
-// Rule of thumb: we SET acceleration, and ADD to velocity.
 func setPlayerAccel(p *Player, g *Game) {
 	if g.Input.GetAction(input.Left).IsPressed {
 		p.accel.X = -runAcceleration
@@ -131,13 +136,24 @@ func setPlayerAccel(p *Player, g *Game) {
 		p.accel.X = 0
 	}
 
-	if g.Input.GetAction(input.Jump).IsPressed && p.moveState != Falling && p.moveState != Jumping {
+	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
 		// Perform a jump
-		p.accel.Y = -jumpAccel - gravityAccel
+		p.isGrounded = false
+		p.accel.Y = -jumpAccel - gravity
 	}
-	p.accel.Y += gravityAccel
+	p.accel.Y += gravity
 
-	p.accel.Y = core.Clamp(-jumpAccel, gravityAccel, p.accel.Y)
+	p.accel.Y = core.Clamp(-jumpAccel, gravity, p.accel.Y)
+}
+
+// Slow the player down by 'runDeceleration' amount
+func applyPlayerDecel(p *Player) {
+	switch p.velocity.X > 0 {
+	case true:
+		p.velocity.X = math.Max(p.velocity.X-runDeceleration, 0)
+	case false:
+		p.velocity.X = math.Min(p.velocity.X+runDeceleration, 0)
+	}
 }
 
 // Calculate and set the horizontal and vertical velocities
@@ -150,12 +166,7 @@ func setPlayerVelocity(p *Player, g *Game) {
 
 	// No player horizontal input
 	if !g.Input.GetAction(input.Left).IsPressed && !g.Input.GetAction(input.Right).IsPressed {
-		switch p.velocity.X > 0 {
-		case true:
-			p.velocity.X = math.Max(p.velocity.X-runDeceleration, 0)
-		case false:
-			p.velocity.X = math.Min(p.velocity.X+runDeceleration, 0)
-		}
+		applyPlayerDecel(p)
 	}
 
 	p.velocity.X = core.Clamp(-maxRunSpeed, maxRunSpeed, p.velocity.X)
@@ -164,6 +175,7 @@ func setPlayerVelocity(p *Player, g *Game) {
 	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 }
 
+// Attempt to move player to their new position. Handles collision.
 func movePlayer(p *Player, g *Game) {
 	p.Collider.Position = core.Vector2{
 		X: p.velocity.X + p.Collider.Position.X,
@@ -189,6 +201,9 @@ func movePlayer(p *Player, g *Game) {
 	p.Collider.Position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
 	p.isGrounded = p.position.Y >= TEMPGround
+	if p.isGrounded {
+		p.velocity.Y = 0
+	}
 }
 
 // TODO: spawn a bullet in this function
@@ -204,8 +219,8 @@ func (p *Player) Shoot() {
 		Y: float64(cursorY) - p.position.Y,
 	})
 
-	p.accel.X -= aimDir.X * gunPower
-	p.accel.Y -= aimDir.Y * gunPower
+	p.velocity.X -= aimDir.X * gunPowerX
+	p.velocity.Y -= aimDir.Y * gunPowerY
 
 	p.shotCooldown = gunDelay
 
