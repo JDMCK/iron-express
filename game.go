@@ -22,9 +22,11 @@ type Game struct {
 
 	cam *Camera
 
-	player    *Player
+	player *Player
+
 	levels    []Level
 	currLevel int
+	enemies   []*Enemy
 
 	gui []gui.Element
 }
@@ -45,6 +47,14 @@ func NewGame() (*Game, error) {
 		return nil, err
 	}
 
+	// enemy, err := NewEnemy()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	enemies := make([]*Enemy, 0, 10)
+	// enemies = append(enemies, enemy)
+
 	// Make the initial level
 	levels := make([]Level, 0, 1)
 	level := NewLevel()
@@ -57,11 +67,12 @@ func NewGame() (*Game, error) {
 	cam.CenterScreenOffset(WorldWidth-player.Collider.Width, WorldHeight*2-player.Collider.Height*2)
 
 	return &Game{
-		Input:  *input,
-		player: player,
-		levels: levels,
-		gui:    guiEls,
-		cam:    cam,
+		Input:   *input,
+		player:  player,
+		levels:  levels,
+		gui:     guiEls,
+		cam:     cam,
+		enemies: enemies,
 	}, nil
 }
 
@@ -97,6 +108,10 @@ func (g *Game) Draw(screen *eb.Image) {
 
 	for _, e := range g.gui {
 		e.Draw(screen)
+	}
+
+	for _, enemy := range g.enemies {
+		enemy.Draw(screen, camOp)
 	}
 }
 

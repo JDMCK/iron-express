@@ -9,8 +9,6 @@ stepout (so) - step out of a function
 print - print a variable
 display -a <var> - add variable to display list
 display -d <var id> - remove a variable by id
-rewind - run backwards until breakpoint
-watch -r|w <var> - set data breakpoint (watch) on a variable
 
 
 # Gotchas
