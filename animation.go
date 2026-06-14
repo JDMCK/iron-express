@@ -1,13 +1,11 @@
-package gfx
+package main
 
 import (
-	"iron-express/core"
-
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Animation struct {
-	timer core.Timer
+	timer Timer
 	atlas *Atlas
 	row   int
 }
@@ -17,7 +15,7 @@ type AnimationMap map[string]*Animation
 func NewAnimation(a *Atlas, row int, duration int, frames int, loop bool) *Animation {
 	return &Animation{
 		atlas: a,
-		timer: core.NewTimer(duration, frames, loop, nil),
+		timer: NewTimer(duration, frames, loop, nil),
 		row:   row,
 	}
 }

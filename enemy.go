@@ -1,32 +1,28 @@
 package main
 
 import (
-	"iron-express/config"
-	"iron-express/core"
-	"iron-express/gfx"
-
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Enemy struct {
-	position     core.Vector2
-	velocity     core.Vector2
-	acceleration core.Vector2
+	position     Vector2
+	velocity     Vector2
+	acceleration Vector2
 	state        string
-	animations   gfx.AnimationMap
+	animations   AnimationMap
 	facingRight  bool
 	isGrounded   bool
-	Collider     *core.Collider
+	Collider     *Collider
 }
 
 func NewEnemy() (*Enemy, error) {
-	anims, err := config.LoadAnimationAtlas("player")
+	anims, err := LoadAnimationAtlas("player")
 	if err != nil {
 		return nil, err
 	}
 
-	pos := core.Vector2{X: 100.0, Y: 0.0}
-	collider := core.NewCollider(pos, playerWidth, playerHeight)
+	pos := Vector2{X: 100.0, Y: 0.0}
+	collider := NewCollider(pos, playerWidth, playerHeight)
 
 	return &Enemy{
 		position:   pos,

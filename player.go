@@ -1,11 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"iron-express/config"
-	"iron-express/core"
-	"iron-express/gfx"
-	"iron-express/input"
 	"math"
 
 	eb "github.com/hajimehoshi/ebiten/v2"
@@ -20,15 +15,15 @@ const (
 )
 
 type Player struct {
-	position     core.Vector2
-	velocity     core.Vector2
-	accel        core.Vector2
+	position     Vector2
+	velocity     Vector2
+	accel        Vector2
 	animState    string
-	animations   gfx.AnimationMap
+	animations   AnimationMap
 	facingRight  bool
 	isGrounded   bool
 	shotCooldown int
-	Collider     *core.Collider
+	Collider     *Collider
 }
 
 const playerWidth = 32
@@ -57,13 +52,13 @@ const gunPowerY float64 = 4
 const gunDelay int = 20
 
 func NewPlayer() (*Player, error) {
-	anims, err := config.LoadAnimationAtlas("player")
+	anims, err := LoadAnimationAtlas("player")
 	if err != nil {
 		return nil, err
 	}
 
-	pos := core.Vector2{X: 100.0, Y: 0.0}
-	collider := core.NewCollider(pos, playerWidth, playerHeight)
+	pos := Vector2{X: 100.0, Y: 0.0}
+	collider := NewCollider(pos, playerWidth, playerHeight)
 
 	return &Player{
 		position:   pos,
@@ -80,7 +75,7 @@ func (p *Player) Update(g *Game) {
 		p.shotCooldown -= 1
 	}
 
-	if g.Input.GetAction(input.Primary).IsPressed && p.shotCooldown == 0 {
+	if g.Input.GetAction(Primary).IsPressed && p.shotCooldown == 0 {
 		Shoot(p)
 	}
 
@@ -88,9 +83,9 @@ func (p *Player) Update(g *Game) {
 
 	movePlayer(p, g)
 
-	if g.Input.GetAction(input.Right).IsPressed {
+	if g.Input.GetAction(Right).IsPressed {
 		p.facingRight = true
-	} else if g.Input.GetAction(input.Left).IsPressed {
+	} else if g.Input.GetAction(Left).IsPressed {
 		p.facingRight = false
 	}
 
@@ -121,44 +116,44 @@ func checkAnimState(p *Player) {
 
 // Handles player acceleration from player input.
 func setPlayerAccel(p *Player, g *Game) {
-	if g.Input.GetAction(input.Left).IsPressed && p.velocity.X > -maxRunSpeed {
+	if g.Input.GetAction(Left).IsPressed && p.velocity.X > -maxRunSpeed {
 		p.accel.X = -runAcceleration
-	} else if g.Input.GetAction(input.Right).IsPressed && p.velocity.X < maxRunSpeed {
+	} else if g.Input.GetAction(Right).IsPressed && p.velocity.X < maxRunSpeed {
 		p.accel.X = runAcceleration
 	} else {
 		p.accel.X = 0
 	}
 
-	if g.Input.GetAction(input.Jump).IsPressed && p.isGrounded {
+	if g.Input.GetAction(Jump).IsPressed && p.isGrounded {
 		// Perform a jump
 		p.isGrounded = false
 		p.accel.Y = -jumpPower - gravity
 	}
 	p.accel.Y += gravity
 
-	p.accel.Y = core.Clamp(-jumpPower, gravity, p.accel.Y)
+	p.accel.Y = Clamp(-jumpPower, gravity, p.accel.Y)
 }
 
 // Calculate and set the horizontal and vertical velocities for the Player
 func setPlayerVelocity(p *Player, g *Game) {
 	p.velocity.X += p.accel.X
 
-	if !g.Input.GetAction(input.Left).IsPressed &&
-		!g.Input.GetAction(input.Right).IsPressed { // No player horizontal input
+	if !g.Input.GetAction(Left).IsPressed &&
+		!g.Input.GetAction(Right).IsPressed { // No player horizontal input
 		applyPlayerDecel(p, runDeceleration)
 	} else if math.Abs(p.velocity.X) > maxRunSpeed { // Gun boost speed decay
 		applyPlayerDecel(p, speedDecay)
 	}
 
-	p.velocity.X = core.Clamp(-maxTotalSpeed, maxTotalSpeed, p.velocity.X)
+	p.velocity.X = Clamp(-maxTotalSpeed, maxTotalSpeed, p.velocity.X)
 
 	p.velocity.Y += p.accel.Y
-	p.velocity.Y = core.Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
+	p.velocity.Y = Clamp(-maxJumpSpeed, maxFallSpeed, p.velocity.Y)
 }
 
 // Attempt to move player to their new position. Handles collision.
 func movePlayer(p *Player, g *Game) {
-	p.Collider.Position = core.Vector2{
+	p.Collider.Position = Vector2{
 		X: p.velocity.X + p.Collider.Position.X,
 		Y: p.velocity.Y + p.Collider.Position.Y,
 	}
@@ -166,12 +161,12 @@ func movePlayer(p *Player, g *Game) {
 	levelLayers := g.GetCurrLevel().layers
 
 	for _, layer := range levelLayers {
-		dir, amt := core.IntersectAABB(p.Collider, layer.Collider)
+		dir, amt := IntersectAABB(p.Collider, layer.Collider)
 
 		switch dir {
-		case core.XCol:
+		case XCol:
 			p.Collider.Position.X += amt
-		case core.YCol:
+		case YCol:
 			p.Collider.Position.Y += amt
 		}
 	}
@@ -179,8 +174,8 @@ func movePlayer(p *Player, g *Game) {
 	p.position = p.Collider.Position
 
 	// TEMPORARY: ensure player doesn't fall out of the world
-	p.Collider.Position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
-	p.position.Y = core.Clamp(0, TEMPGround, p.Collider.Position.Y)
+	p.Collider.Position.Y = Clamp(0, TEMPGround, p.Collider.Position.Y)
+	p.position.Y = Clamp(0, TEMPGround, p.Collider.Position.Y)
 	p.isGrounded = p.position.Y >= TEMPGround
 	if p.isGrounded {
 		p.velocity.Y = 0
@@ -201,12 +196,10 @@ func applyPlayerDecel(p *Player, decel float64) {
 func Shoot(p *Player) {
 	cursorX, cursorY := eb.CursorPosition()
 
-	aimDir := core.VectorNormalize(core.Vector2{
+	aimDir := VectorNormalize(Vector2{
 		X: float64(cursorX - WorldWidth/2),
 		Y: float64(cursorY - WorldHeight/2),
 	})
-
-	fmt.Printf("CX: %v, CY: %v\naim:%v\n", cursorX, cursorY, aimDir)
 
 	p.accel.X -= aimDir.X * gunPowerX
 	p.accel.Y -= aimDir.Y * gunPowerY

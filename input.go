@@ -1,4 +1,4 @@
-package input
+package main
 
 import (
 	"fmt"
@@ -42,13 +42,13 @@ type Binding struct {
 
 type Mapping map[Action][]Binding
 
-type System struct {
+type Input struct {
 	gamepadId eb.GamepadID
 	mapping   Mapping
 }
 
-func (s *System) GetAction(a Action) Mode {
-	bindings := s.mapping[a] // we can assume all actions are in map
+func (i *Input) GetAction(a Action) Mode {
+	bindings := i.mapping[a] // we can assume all actions are in map
 	isPressed := false
 	isReleased := false
 	// checks if any bindings are being pressed/released
@@ -61,8 +61,8 @@ func (s *System) GetAction(a Action) Mode {
 			isPressed = eb.IsMouseButtonPressed(eb.MouseButton(b.value)) || isPressed
 			isReleased = inpututil.IsMouseButtonJustReleased(eb.MouseButton(b.value)) || isReleased
 		case GamepadButton:
-			isPressed = eb.IsGamepadButtonPressed(s.gamepadId, eb.GamepadButton(b.value)) || isPressed
-			isReleased = inpututil.IsGamepadButtonJustReleased(s.gamepadId, eb.GamepadButton(b.value)) || isReleased
+			isPressed = eb.IsGamepadButtonPressed(i.gamepadId, eb.GamepadButton(b.value)) || isPressed
+			isReleased = inpututil.IsGamepadButtonJustReleased(i.gamepadId, eb.GamepadButton(b.value)) || isReleased
 		}
 	}
 	return Mode{
@@ -78,8 +78,8 @@ func NewBinding(s Source, v int) (Binding, error) {
 	return Binding{source: s, value: v}, nil
 }
 
-func NewSystem(m Mapping, gp eb.GamepadID) *System {
-	return &System{
+func NewSystem(m Mapping, gp eb.GamepadID) *Input {
+	return &Input{
 		mapping:   m,
 		gamepadId: gp,
 	}

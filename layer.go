@@ -2,8 +2,6 @@ package main
 
 import (
 	"image/color"
-	"iron-express/core"
-	"iron-express/gfx"
 	"math/rand/v2"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,8 +12,8 @@ type Layer struct {
 	rows     int
 	cols     int
 	tiles    []*Tile
-	Collider *core.Collider
-	parallax *gfx.Parallax
+	Collider *Collider
+	parallax *Parallax
 }
 
 func NewLayer(width, height int) Layer {
@@ -40,8 +38,8 @@ func NewLayer(width, height int) Layer {
 
 	// attach a collider to the newly made layer
 	layerX, layerY := layer.tiles[0].x, layer.tiles[0].y
-	layerTopLeft := core.Vector2{X: float64(layerX), Y: float64(layerY)}
-	collider := core.NewCollider(
+	layerTopLeft := Vector2{X: float64(layerX), Y: float64(layerY)}
+	collider := NewCollider(
 		layerTopLeft, width*TileSize, height*TileSize)
 
 	layer.Collider = collider

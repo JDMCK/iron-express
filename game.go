@@ -2,9 +2,7 @@ package main
 
 import (
 	"image/color"
-	"iron-express/config"
 	"iron-express/gui"
-	"iron-express/input"
 	"log"
 
 	eb "github.com/hajimehoshi/ebiten/v2"
@@ -18,7 +16,7 @@ var WorldHeight = 180
 type Game struct {
 	paused bool
 	debug  bool
-	Input  input.System
+	Input  Input
 
 	cam *Camera
 
@@ -38,7 +36,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func NewGame() (*Game, error) {
-	input, err := config.LoadInput()
+	input, err := LoadInput()
 	if err != nil {
 		return nil, err
 	}

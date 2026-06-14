@@ -1,25 +1,23 @@
 package main
 
 import (
-	"iron-express/config"
-	"iron-express/gfx"
 	"log"
 
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Level struct {
-	background *gfx.Parallax
+	background *Parallax
 	layers     []Layer
 	enemies    []Enemy
 }
 
 func NewLevel() Level {
-	backAtlas, err := config.LoadAtlas("background")
+	backAtlas, err := LoadAtlas("background")
 	if err != nil {
 		log.Fatal("Failed to load background atlas.")
 	}
-	parallax := gfx.NewParallax(backAtlas, []float64{1, 0.95, 0.9, 0.8, 0.4})
+	parallax := NewParallax(backAtlas, []float64{1, 0.95, 0.9, 0.8, 0.4})
 	return Level{
 		background: parallax,
 		layers:     []Layer{},
