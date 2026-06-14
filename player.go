@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"iron-express/config"
 	"iron-express/core"
 	"iron-express/gfx"
@@ -80,7 +81,7 @@ func (p *Player) Update(g *Game) {
 	}
 
 	if g.Input.GetAction(input.Primary).IsPressed && p.shotCooldown == 0 {
-		p.Shoot()
+		Shoot(p)
 	}
 
 	setPlayerVelocity(p, g)
@@ -197,12 +198,15 @@ func applyPlayerDecel(p *Player, decel float64) {
 }
 
 // TODO: spawn a bullet in this function
-func (p *Player) Shoot() {
+func Shoot(p *Player) {
 	cursorX, cursorY := eb.CursorPosition()
+
 	aimDir := core.VectorNormalize(core.Vector2{
-		X: float64(cursorX) - p.position.X,
-		Y: float64(cursorY) - p.position.Y,
+		X: float64(cursorX - WorldWidth/2),
+		Y: float64(cursorY - WorldHeight/2),
 	})
+
+	fmt.Printf("CX: %v, CY: %v\naim:%v\n", cursorX, cursorY, aimDir)
 
 	p.accel.X -= aimDir.X * gunPowerX
 	p.accel.Y -= aimDir.Y * gunPowerY
