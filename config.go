@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 )
 
 const inputConfigPath = "config/inputs.config"
+const mapConfigPath = "config/levels/%s.config.map"
 
 func LoadInput() (*Input, error) {
 	data, err := os.ReadFile(inputConfigPath)
@@ -154,8 +156,39 @@ func LoadAtlas(name string) (*Atlas, error) {
 	return NewAtlas(img, rows, cols, frameWidth, frameHeight), nil
 }
 
-func LoadLevelAtlas(name string) {
+func LoadLevelAtlas(path string) (*Level, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lines := strings.SplitSeq(string(data), "\n")
 
+	ImportedLayerIndices = make([][]int, 0, DefaultLayerCount)
+
+	for line := range lines {
+		k, v, found := parseKV(line)
+		if found == false {
+			continue // likely a comment or blank line
+		}
+		switch k {
+		case "atlas_path":
+			AtlasPath = &v
+		case "tile_width":
+			TileWidth, _ = strconv.Atoi(v)
+		case "tile_height":
+			TileHeight, _ = strconv.Atoi(v)
+		case "map_width":
+			CanvasWidth, _ = strconv.Atoi(v)
+		case "map_height":
+			CanvasHeight, _ = strconv.Atoi(v)
+		}
+
+		if strings.HasPrefix(k, "layer_") {
+			var layer int
+			fmt.Sscanf(k, "layer_%d", &layer)
+			ImportedLayerIndices = append(ImportedLayerIndices, parseLayer(v))
+		}
+	}
 }
 
 func LoadAnimationAtlas(name string) (AnimationMap, error) {
