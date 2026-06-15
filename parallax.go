@@ -20,7 +20,7 @@ func (p *Parallax) Update() {
 
 }
 
-func (p *Parallax) Draw(screen *eb.Image, x, y float64, op *eb.DrawImageOptions) {
+func (p *Parallax) Draw(screen *eb.Image, x float64, op *eb.DrawImageOptions) {
 	for i := range p.layers.Frames {
 		shiftSpeed := p.speedMultipliers[i]
 		layerOffset := x * shiftSpeed

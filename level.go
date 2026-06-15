@@ -12,7 +12,7 @@ type Level struct {
 	enemies    []Enemy
 }
 
-func NewLevel() Level {
+func NewLevel(layers []Layer) Level {
 	backAtlas, err := LoadAtlas("background")
 	if err != nil {
 		log.Fatal("Failed to load background atlas.")
@@ -20,7 +20,7 @@ func NewLevel() Level {
 	parallax := NewParallax(backAtlas, []float64{1, 0.95, 0.9, 0.8, 0.4})
 	return Level{
 		background: parallax,
-		layers:     []Layer{},
+		layers:     layers,
 	}
 }
 
@@ -29,7 +29,7 @@ func (l *Level) Update() {
 }
 
 func (l *Level) Draw(screen *eb.Image, x, y float64, op *eb.DrawImageOptions) {
-	l.background.Draw(screen, x, y, op)
+	l.background.Draw(screen, x, op)
 
 	for _, l := range l.layers {
 		l.Draw(screen, op)

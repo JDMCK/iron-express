@@ -55,7 +55,7 @@ func NewGame() (*Game, error) {
 
 	// Make the initial level
 	levels := make([]Level, 0, 1)
-	level := NewLevel()
+	level := NewLevel(nil)
 	levels = append(levels, level)
 
 	// Make the GUI

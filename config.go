@@ -156,39 +156,72 @@ func LoadAtlas(name string) (*Atlas, error) {
 	return NewAtlas(img, rows, cols, frameWidth, frameHeight), nil
 }
 
-func LoadLevelAtlas(path string) (*Level, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
+// func LoadLevelAtlas(path string) (*Level, error) {
+// 	data, err := os.ReadFile(path)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	lines := strings.SplitSeq(string(data), "\n")
+
+// 	layers := make([]Layer, 0, 10)
+// 	var (
+// 		atlasPath  string
+// 		tileWidth  int
+// 		tileHeight int
+// 		mapWidth   int
+// 		mapHeight  int
+// 	)
+
+// 	for line := range lines {
+// 		k, v, err := ParseKV(line)
+// 		if err != nil {
+// 			continue // likely a comment or blank line
+// 		}
+// 		switch k {
+// 		case "atlas_path":
+// 			atlasPath = v
+// 		case "tile_width":
+// 			tileWidth, _ = strconv.Atoi(v)
+// 		case "tile_height":
+// 			tileHeight, _ = strconv.Atoi(v)
+// 		case "map_width":
+// 			mapWidth, _ = strconv.Atoi(v)
+// 		case "map_height":
+// 			mapHeight, _ = strconv.Atoi(v)
+// 		}
+
+// 		if strings.HasPrefix(k, "layer_") {
+// 			var layer int
+// 			fmt.Sscanf(k, "layer_%d", &layer)
+// 			ImportedLayerIndices = append(ImportedLayerIndices, parseLayer(v))
+// 		}
+// 	}
+// }
+
+func parseLayer(data string, tileCount int) []int {
+	parts := strings.Split(data, " ")
+	indices := make([]int, 0, tileCount)
+	for _, p := range parts {
+		atlasIndex, count, _ := strings.Cut(p, "-")
+		if count == "" {
+			log.Fatal("Failed to parse layer.")
+		}
+		countN, _ := strconv.Atoi(count)
+		if atlasIndex == "" {
+			for range countN {
+				indices = append(indices, -1)
+			}
+			continue
+		}
+		for range countN {
+			i, _ := strconv.Atoi(atlasIndex)
+			indices = append(indices, i)
+		}
 	}
-	lines := strings.SplitSeq(string(data), "\n")
-
-	ImportedLayerIndices = make([][]int, 0, DefaultLayerCount)
-
-	for line := range lines {
-		k, v, found := parseKV(line)
-		if found == false {
-			continue // likely a comment or blank line
-		}
-		switch k {
-		case "atlas_path":
-			AtlasPath = &v
-		case "tile_width":
-			TileWidth, _ = strconv.Atoi(v)
-		case "tile_height":
-			TileHeight, _ = strconv.Atoi(v)
-		case "map_width":
-			CanvasWidth, _ = strconv.Atoi(v)
-		case "map_height":
-			CanvasHeight, _ = strconv.Atoi(v)
-		}
-
-		if strings.HasPrefix(k, "layer_") {
-			var layer int
-			fmt.Sscanf(k, "layer_%d", &layer)
-			ImportedLayerIndices = append(ImportedLayerIndices, parseLayer(v))
-		}
+	if len(indices) != tileCount {
+		log.Fatal("Failed to parse layer.")
 	}
+	return indices
 }
 
 func LoadAnimationAtlas(name string) (AnimationMap, error) {
