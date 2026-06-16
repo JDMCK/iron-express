@@ -1,50 +1,37 @@
 package main
 
 import (
-	"image/color"
-	"math/rand/v2"
-
-	"github.com/hajimehoshi/ebiten/v2"
 	eb "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Layer struct {
-	rows     int
-	cols     int
-	tiles    []*Tile
-	Collider *Collider
-	parallax *Parallax
+	rows      int
+	cols      int
+	tiles     []*Tile
+	Colliders []*Collider
+	parallax  *Parallax
 }
 
-func NewLayer(width, height int) Layer {
-	tiles := make([]*Tile, width*height)
+func NewLayer(cols, rows int, tileWidth, tileHeight int, atlas *Atlas, atlasIndices []int) *Layer {
+	tiles := make([]*Tile, rows*cols)
 
-	// give each tile in the layer a random color value
-	for i := range tiles {
-		img := ebiten.NewImage(TileSize, TileSize)
-		randR := uint8(rand.UintN(256))
-		randG := uint8(rand.UintN(256))
-		randB := uint8(rand.UintN(256))
-		img.Fill(color.RGBA{randR, randG, randB, 255})
-		x, y := calcTilePos(i, width, TileSize, TileSize)
-		tiles[i] = NewTile(x, y, img, true)
+	for i, _ := range tiles {
+		atlasIndex := atlasIndices[i]
+		if atlasIndex == -1 {
+			continue
+		}
+		x, y := calcTilePos(i, cols, tileWidth, tileHeight)
+		tiles[i] = NewTile(x, y, atlas.Frames[atlasIndex], true)
 	}
 
 	layer := Layer{
-		rows:  height,
-		cols:  width,
+		rows:  rows,
+		cols:  cols,
 		tiles: tiles,
 	}
 
-	// attach a collider to the newly made layer
-	layerX, layerY := layer.tiles[0].x, layer.tiles[0].y
-	layerTopLeft := Vector2{X: float64(layerX), Y: float64(layerY)}
-	collider := NewCollider(
-		layerTopLeft, width*TileSize, height*TileSize)
-
-	layer.Collider = collider
-
-	return layer
+	layer.Colliders = nil
+	return &layer
 }
 
 // translates index to x y position of tile
@@ -53,6 +40,9 @@ func calcTilePos(i int, width, tileWidth, tileHeight int) (int, int) {
 }
 func (l *Layer) Draw(screen *eb.Image, op *eb.DrawImageOptions) {
 	for _, t := range l.tiles {
+		if t == nil {
+			continue
+		}
 		t.Draw(screen, op)
 	}
 }

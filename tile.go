@@ -2,8 +2,6 @@ package main
 
 import eb "github.com/hajimehoshi/ebiten/v2"
 
-const TileSize = 16
-
 type Tile struct {
 	img       *eb.Image
 	x, y      int

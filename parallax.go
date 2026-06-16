@@ -40,8 +40,8 @@ func (p *Parallax) Draw(screen *eb.Image, x float64, op *eb.DrawImageOptions) {
 		afterGeoM.GeoM.Translate(centerOffset+frameWidth+layerOffset, 0)
 		afterGeoM.GeoM.Concat(op.GeoM)
 
-		screen.DrawImage(p.layers.GetFrame(0, i).(*eb.Image), &beforeGeoM)
-		screen.DrawImage(p.layers.GetFrame(0, i).(*eb.Image), &centerOp)
-		screen.DrawImage(p.layers.GetFrame(0, i).(*eb.Image), &afterGeoM)
+		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &beforeGeoM)
+		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &centerOp)
+		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &afterGeoM)
 	}
 }

@@ -8,16 +8,17 @@ import (
 
 type Level struct {
 	background *Parallax
-	layers     []Layer
+	layers     []*Layer
 	enemies    []Enemy
 }
 
-func NewLevel(layers []Layer) Level {
+func NewLevel(levelConfig string) Level {
 	backAtlas, err := LoadAtlas("background")
 	if err != nil {
 		log.Fatal("Failed to load background atlas.")
 	}
 	parallax := NewParallax(backAtlas, []float64{1, 0.95, 0.9, 0.8, 0.4})
+	layers := LoadLevelLayers(levelConfig)
 	return Level{
 		background: parallax,
 		layers:     layers,

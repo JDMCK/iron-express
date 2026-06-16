@@ -44,7 +44,7 @@ const maxJumpSpeed float64 = 8
 const maxFallSpeed float64 = 8
 const gravity float64 = 0.7
 
-const TEMPGround float64 = 148
+const TEMPGround float64 = 16 * 16
 
 // Gun parameters
 const gunPowerX float64 = 6
@@ -161,14 +161,17 @@ func movePlayer(p *Player, g *Game) {
 	levelLayers := g.GetCurrLevel().layers
 
 	for _, layer := range levelLayers {
-		dir, amt := IntersectAABB(p.Collider, layer.Collider)
-
-		switch dir {
-		case XCol:
-			p.Collider.Position.X += amt
-		case YCol:
-			p.Collider.Position.Y += amt
+		if layer.Colliders == nil {
+			continue
 		}
+		// dir, amt := IntersectAABB(p.Collider, layer.Collider)
+
+		// switch dir {
+		// case XCol:
+		// 	p.Collider.Position.X += amt
+		// case YCol:
+		// 	p.Collider.Position.Y += amt
+		// }
 	}
 
 	p.position = p.Collider.Position

@@ -54,6 +54,6 @@ func (a *Animation) Draw(screen *eb.Image, x, y int, facingRight bool, op *eb.Dr
 	newOp.GeoM.Translate(float64(x), float64(y))
 	newOp.GeoM.Concat(op.GeoM)
 
-	frame := a.atlas.GetFrame(a.row, a.timer.Cycles).(*eb.Image)
+	frame := a.atlas.GetFrameFromCoords(a.timer.Cycles, a.row).(*eb.Image)
 	screen.DrawImage(frame, newOp)
 }

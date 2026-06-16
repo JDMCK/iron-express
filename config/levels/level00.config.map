@@ -1,8 +1,0 @@
-atlas_path=assets/dungeon.png
-tile_width=16
-tile_height=16
-map_width=32
-map_height=16
-layer_0=-139 2-5 -97 2-4 -48 2-8 -101 2-11 -67 16-32 
-layer_1=-45 1-1 -101 1-1 -51 1-1 -113 1-1 -198 
-layer_2=-512 
