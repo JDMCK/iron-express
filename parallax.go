@@ -5,13 +5,13 @@ import (
 )
 
 type Parallax struct {
-	layers           *Atlas
+	atlas            *Atlas
 	speedMultipliers []float64
 }
 
 func NewParallax(atlas *Atlas, speedMultipliers []float64) *Parallax {
 	return &Parallax{
-		layers:           atlas,
+		atlas:            atlas,
 		speedMultipliers: speedMultipliers,
 	}
 }
@@ -21,10 +21,10 @@ func (p *Parallax) Update() {
 }
 
 func (p *Parallax) Draw(screen *eb.Image, x float64, op *eb.DrawImageOptions) {
-	for i := range p.layers.Frames {
+	for i := range p.atlas.Frames {
 		shiftSpeed := p.speedMultipliers[i]
 		layerOffset := x * shiftSpeed
-		frameWidth := float64(p.layers.FrameWidth)
+		frameWidth := float64(p.atlas.FrameWidth)
 		centerZone := int((x - layerOffset) / frameWidth) // the multiple of the frame width where the target currently is
 		centerOffset := float64(centerZone) * frameWidth
 
@@ -40,8 +40,8 @@ func (p *Parallax) Draw(screen *eb.Image, x float64, op *eb.DrawImageOptions) {
 		afterGeoM.GeoM.Translate(centerOffset+frameWidth+layerOffset, 0)
 		afterGeoM.GeoM.Concat(op.GeoM)
 
-		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &beforeGeoM)
-		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &centerOp)
-		screen.DrawImage(p.layers.GetFrameFromCoords(i, 0).(*eb.Image), &afterGeoM)
+		screen.DrawImage(p.atlas.GetFrameFromCoords(i, 0).(*eb.Image), &beforeGeoM)
+		screen.DrawImage(p.atlas.GetFrameFromCoords(i, 0).(*eb.Image), &centerOp)
+		screen.DrawImage(p.atlas.GetFrameFromCoords(i, 0).(*eb.Image), &afterGeoM)
 	}
 }

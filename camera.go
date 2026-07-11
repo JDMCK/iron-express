@@ -26,6 +26,10 @@ func (c *Camera) SetFocus(x, y float64, drag float64) {
 	c.focusY = y
 }
 
+func (c *Camera) SetFocusX(x float64, drag float64) {
+	c.focusX = x
+}
+
 func (c *Camera) CenterScreenOffset(screenWidth, screenHeight int) {
 	c.offsetX = float64(screenWidth) / 2
 	c.offsetY = float64(screenHeight) / 2

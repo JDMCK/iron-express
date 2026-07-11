@@ -20,8 +20,8 @@ type CollisionDirection int
 
 const (
 	None CollisionDirection = iota
-	YCol
-	XCol
+	YAxis
+	XAxis
 )
 
 func NewCollider(position Vector2, width int, height int) *Collider {
@@ -65,13 +65,13 @@ func IntersectAABB(c1 *Collider, c2 *Collider) (CollisionDirection, float64) {
 
 	switch min(dxLeft, dxRight, dyUp, dyDown) {
 	case dxLeft:
-		return XCol, dxLeft
+		return XAxis, dxLeft
 	case dxRight:
-		return XCol, -dxRight
+		return XAxis, -dxRight
 	case dyUp:
-		return YCol, dyUp
+		return YAxis, dyUp
 	case dyDown:
-		return YCol, -dyDown
+		return YAxis, -dyDown
 	default:
 		log.Fatal("Failed to calculate collision.")
 		return None, 0

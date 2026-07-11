@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	eb "github.com/hajimehoshi/ebiten/v2"
 	ebutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -140,18 +141,11 @@ func LoadAtlas(name string) (*Atlas, error) {
 			if err != nil {
 				return nil, err
 			}
-		case "cols":
-			cols, err = strconv.Atoi(v)
-			if err != nil {
-				return nil, err
-			}
-		case "rows":
-			rows, err = strconv.Atoi(v)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
+	size := img.Bounds().Size()
+	cols = size.X / frameWidth
+	rows = size.Y / frameHeight
 	return NewAtlas(img, cols, rows, frameWidth, frameHeight), nil
 }
 
@@ -167,6 +161,7 @@ func LoadLevelLayers(name string) []*Layer {
 
 	var (
 		atlasPath  string
+		img        *ebiten.Image
 		tileWidth  int
 		tileHeight int
 		mapWidth   int
@@ -198,9 +193,12 @@ func LoadLevelLayers(name string) []*Layer {
 		}
 	}
 
-	img, _, _ := ebutil.NewImageFromFile(atlasPath)
-	atlas := NewAtlas(img, mapWidth, mapHeight, tileWidth, tileHeight)
-	fmt.Println(atlas)
+	img, _, _ = ebutil.NewImageFromFile(atlasPath)
+	size := img.Bounds().Size()
+	cols := size.X / tileWidth
+	rows := size.Y / tileHeight
+	atlas := NewAtlas(img, cols, rows, tileWidth, tileHeight)
+
 	if err != nil {
 		log.Fatalf("Failed to load atlas: %s", atlasPath)
 	}

@@ -14,6 +14,7 @@ type Layer struct {
 
 func NewLayer(cols, rows int, tileWidth, tileHeight int, atlas *Atlas, atlasIndices []int) *Layer {
 	tiles := make([]*Tile, rows*cols)
+	colliders := make([]*Collider, 0, rows*cols)
 
 	for i, _ := range tiles {
 		atlasIndex := atlasIndices[i]
@@ -22,15 +23,16 @@ func NewLayer(cols, rows int, tileWidth, tileHeight int, atlas *Atlas, atlasIndi
 		}
 		x, y := calcTilePos(i, cols, tileWidth, tileHeight)
 		tiles[i] = NewTile(x, y, atlas.Frames[atlasIndex], true)
+		colliders = append(colliders, NewCollider(Vector2{float64(x), float64(y)}, tileWidth, tileHeight))
 	}
 
 	layer := Layer{
-		rows:  rows,
-		cols:  cols,
-		tiles: tiles,
+		rows:      rows,
+		cols:      cols,
+		tiles:     tiles,
+		Colliders: colliders,
 	}
 
-	layer.Colliders = nil
 	return &layer
 }
 

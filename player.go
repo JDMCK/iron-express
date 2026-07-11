@@ -44,7 +44,7 @@ const maxJumpSpeed float64 = 8
 const maxFallSpeed float64 = 8
 const gravity float64 = 0.7
 
-const TEMPGround float64 = 16 * 16
+const TEMPGround float64 = 148
 
 // Gun parameters
 const gunPowerX float64 = 6
@@ -164,14 +164,17 @@ func movePlayer(p *Player, g *Game) {
 		if layer.Colliders == nil {
 			continue
 		}
-		// dir, amt := IntersectAABB(p.Collider, layer.Collider)
+		for _, c := range layer.Colliders {
+			axis, amt := IntersectAABB(p.Collider, c)
 
-		// switch dir {
-		// case XCol:
-		// 	p.Collider.Position.X += amt
-		// case YCol:
-		// 	p.Collider.Position.Y += amt
-		// }
+			switch axis {
+			case XAxis:
+				p.Collider.Position.X += amt
+			case YAxis:
+				p.Collider.Position.Y += amt
+				p.isGrounded = amt < 0
+			}
+		}
 	}
 
 	p.position = p.Collider.Position
@@ -179,7 +182,7 @@ func movePlayer(p *Player, g *Game) {
 	// TEMPORARY: ensure player doesn't fall out of the world
 	p.Collider.Position.Y = Clamp(0, TEMPGround, p.Collider.Position.Y)
 	p.position.Y = Clamp(0, TEMPGround, p.Collider.Position.Y)
-	p.isGrounded = p.position.Y >= TEMPGround
+	p.isGrounded = p.isGrounded || p.position.Y >= TEMPGround
 	if p.isGrounded {
 		p.velocity.Y = 0
 	}

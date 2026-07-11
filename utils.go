@@ -7,6 +7,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
+type Number interface {
+	~int | ~float64
+}
+
 func Clamp(min, max, val float64) float64 {
 	if val < min {
 		return min
@@ -15,6 +19,13 @@ func Clamp(min, max, val float64) float64 {
 		return max
 	}
 	return val
+}
+
+func Abs[T Number](n T) T {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 const BorderWidth = 2

@@ -62,7 +62,7 @@ func NewGame() (*Game, error) {
 	guiEls := make([]gui.Element, 0)
 
 	cam := NewCamera(1)
-	cam.CenterScreenOffset(WorldWidth-player.Collider.Width, WorldHeight*2-player.Collider.Height*2)
+	cam.CenterScreenOffset(WorldWidth-player.Collider.Width, 0)
 
 	return &Game{
 		Input:   *input,
@@ -89,7 +89,7 @@ func (g *Game) Update() error {
 	}
 	g.levels[g.currLevel].Update()
 
-	g.cam.SetFocus(g.player.position.X, g.player.position.Y, 1)
+	g.cam.SetFocusX(g.player.position.X, 1)
 
 	frame += 1
 	return nil
